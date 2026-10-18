@@ -1,0 +1,28 @@
+# Explicit opt-in deployment of the PC trial; the base compose stays on baseline.
+# Only public model/runtime directories are exposed. No fixtures, clips or transcripts.
+services:
+  web:
+    image: signemo:responsive-core-20261016-v22
+    build:
+      args:
+        VITE_AI_PROFILE: pc-candidate
+        VITE_BUILD_ID: demo-20261016-responsive-core-v22
+    volumes:
+      - type: bind
+        source: ./output/research-assets/gipformer
+        target: /usr/share/nginx/html/research/gipformer
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ./output/research-assets/emotieff-b0
+        target: /usr/share/nginx/html/research/emotieff-b0
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ./output/research-assets/runtime-ort-gpu
+        target: /usr/share/nginx/html/research/runtime-ort-gpu
+        read_only: true
+        bind:
+          create_host_path: false

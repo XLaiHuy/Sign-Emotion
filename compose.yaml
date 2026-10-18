@@ -1,0 +1,38 @@
+services:
+  web:
+    image: signemo:${SIGNEMO_IMAGE_TAG:-local}
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        VITE_BUILD_ID: ${SIGNEMO_BUILD_ID:-}
+        VITE_SUPABASE_URL: ${VITE_SUPABASE_URL:-}
+        VITE_SUPABASE_ANON_KEY: ${VITE_SUPABASE_ANON_KEY:-}
+    ports:
+      - '127.0.0.1:${SIGNEMO_PORT:-8080}:8080'
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=16m,uid=101,gid=101,mode=1777
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+  dev:
+    profiles: [dev]
+    build:
+      context: .
+      target: development
+    ports:
+      - '127.0.0.1:${SIGNEMO_DEV_PORT:-5173}:5173'
+    volumes:
+      - ./src:/app/src
+      - ./public:/app/public:ro
+      - ./index.html:/app/index.html:ro
+      - ./vite.config.ts:/app/vite.config.ts:ro
+      - ./.env.example:/app/.env.example:ro
+    environment:
+      VITE_SUPABASE_URL: ${VITE_SUPABASE_URL:-}
+      VITE_SUPABASE_ANON_KEY: ${VITE_SUPABASE_ANON_KEY:-}
+      CHOKIDAR_USEPOLLING: 'true'
+    init: true

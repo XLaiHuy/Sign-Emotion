@@ -1,0 +1,908 @@
+{
+  "dataset": "namwu/ViSignLanguage-Video",
+  "license": "CC-BY-4.0",
+  "total": 100,
+  "generated_at": "2026-10-18T12:47:32Z",
+  "items": [
+    {
+      "index": 1,
+      "id": "SENT001",
+      "class_name": "An ủi",
+      "zip_path": "dataset/train/An ủi/126225.mp4",
+      "filename": "SENT001.mp4",
+      "size_bytes": 57394,
+      "sha256": "c882b8a4cb94c9e542fc543510c4ef1d1d3760572a139019c7c6fcd1dd91a8a5"
+    },
+    {
+      "index": 2,
+      "id": "SENT002",
+      "class_name": "Ban ngày",
+      "zip_path": "dataset/train/Ban ngày/112038.mp4",
+      "filename": "SENT002.mp4",
+      "size_bytes": 43081,
+      "sha256": "251ca0794f01dd83fa3ae0b6bfe4e1891bae93ab3951b744a79ad7cbdf487ab1"
+    },
+    {
+      "index": 3,
+      "id": "SENT003",
+      "class_name": "Ban đêm",
+      "zip_path": "dataset/train/Ban đêm/379786.mp4",
+      "filename": "SENT003.mp4",
+      "size_bytes": 34486,
+      "sha256": "8e55b9fbfb9ce7e554ccc292242f3f63c3e0466f48f8c6b6d02ecc13c7b9a641"
+    },
+    {
+      "index": 4,
+      "id": "SENT004",
+      "class_name": "Biết",
+      "zip_path": "dataset/train/Biết/102260.mp4",
+      "filename": "SENT004.mp4",
+      "size_bytes": 29546,
+      "sha256": "1213192fd6fdd8022baeea7d25b4e93cc1ebb2db5b36445f4ff656726712f138"
+    },
+    {
+      "index": 5,
+      "id": "SENT005",
+      "class_name": "Biếu tặng",
+      "zip_path": "dataset/train/Biếu tặng/152578.mp4",
+      "filename": "SENT005.mp4",
+      "size_bytes": 37464,
+      "sha256": "a3f54ee0b933a2bfe46ebf6f2269613e8862ab5c3a1a14cf696a993cd7fa01f6"
+    },
+    {
+      "index": 6,
+      "id": "SENT006",
+      "class_name": "Bàn tay",
+      "zip_path": "dataset/train/Bàn tay/216970.mp4",
+      "filename": "SENT006.mp4",
+      "size_bytes": 41225,
+      "sha256": "b96ce63a9f733999d35449e138c4b7ae0740892afeb278fcbdd524f8b0407485"
+    },
+    {
+      "index": 7,
+      "id": "SENT007",
+      "class_name": "Băn khoăn",
+      "zip_path": "dataset/train/Băn khoăn/100599.mp4",
+      "filename": "SENT007.mp4",
+      "size_bytes": 44166,
+      "sha256": "584b5299d09dddb492274e374f5ffc0523308cb9dba5eda9d8c7ffff7f965564"
+    },
+    {
+      "index": 8,
+      "id": "SENT008",
+      "class_name": "Bạn thân",
+      "zip_path": "dataset/train/Bạn thân/172574.mp4",
+      "filename": "SENT008.mp4",
+      "size_bytes": 53419,
+      "sha256": "b07b1962e0d53f2426632f817a3e22434a949efd17aa5eec4e995e506b34bd99"
+    },
+    {
+      "index": 9,
+      "id": "SENT009",
+      "class_name": "Bế mạc",
+      "zip_path": "dataset/train/Bế mạc/122056.mp4",
+      "filename": "SENT009.mp4",
+      "size_bytes": 45948,
+      "sha256": "d01f08ad0cf692580e4af1864117e035d63eb8bbd2a3824c8eb5fcf5bd1307b3"
+    },
+    {
+      "index": 10,
+      "id": "SENT010",
+      "class_name": "Bệnh nhân",
+      "zip_path": "dataset/train/Bệnh nhân/107540.mp4",
+      "filename": "SENT010.mp4",
+      "size_bytes": 35832,
+      "sha256": "68efd2796dac01d66ece6eaed2c2cc24d6ed00087ad284ae544dfeb87a7eb25c"
+    },
+    {
+      "index": 11,
+      "id": "SENT011",
+      "class_name": "Bệnh viện",
+      "zip_path": "dataset/train/Bệnh viện/132938.mp4",
+      "filename": "SENT011.mp4",
+      "size_bytes": 73214,
+      "sha256": "4b7cccaff5609c9990e8bc98957e76bd5785247e2aec0d065ec013952e705343"
+    },
+    {
+      "index": 12,
+      "id": "SENT012",
+      "class_name": "Bộ y tế",
+      "zip_path": "dataset/train/Bộ y tế/141672.mp4",
+      "filename": "SENT012.mp4",
+      "size_bytes": 64604,
+      "sha256": "895e097498365c2a946faba9c7d548893d4c4340338c33fe51dd51b50760ddff"
+    },
+    {
+      "index": 13,
+      "id": "SENT013",
+      "class_name": "Chiều",
+      "zip_path": "dataset/train/Chiều/181247.mp4",
+      "filename": "SENT013.mp4",
+      "size_bytes": 39675,
+      "sha256": "56c88e81edbd43ec6614ebdce6d0ca2e4bcef89e1c624b0731e169f6fdb503cc"
+    },
+    {
+      "index": 14,
+      "id": "SENT014",
+      "class_name": "Cho",
+      "zip_path": "dataset/train/Cho/106182.mp4",
+      "filename": "SENT014.mp4",
+      "size_bytes": 36791,
+      "sha256": "a27b7d95efc3b2c47abdd13bffbb6aae1802c408b42531d40029c2dcb4bc2f5a"
+    },
+    {
+      "index": 15,
+      "id": "SENT015",
+      "class_name": "Chào",
+      "zip_path": "dataset/train/Chào/124813.mp4",
+      "filename": "SENT015.mp4",
+      "size_bytes": 21456,
+      "sha256": "bdb5593c18b8e3169f53d65d28d55882edb7e651f7f84183d1dada713ae14f11"
+    },
+    {
+      "index": 16,
+      "id": "SENT016",
+      "class_name": "Chân",
+      "zip_path": "dataset/train/Chân/101773.mp4",
+      "filename": "SENT016.mp4",
+      "size_bytes": 39095,
+      "sha256": "1e4da4396d3f6758a77773273be222187c1190f1790e771b7d12853db31289cc"
+    },
+    {
+      "index": 17,
+      "id": "SENT017",
+      "class_name": "Chúng ta",
+      "zip_path": "dataset/train/Chúng ta/331251.mp4",
+      "filename": "SENT017.mp4",
+      "size_bytes": 32785,
+      "sha256": "2d97f99c2876f6c5287bd98d39d2c514e6c8e2f7b4b52c43538de1d449816367"
+    },
+    {
+      "index": 18,
+      "id": "SENT018",
+      "class_name": "Chạy",
+      "zip_path": "dataset/train/Chạy/100425.mp4",
+      "filename": "SENT018.mp4",
+      "size_bytes": 34441,
+      "sha256": "f3504c07e6086df8538e31dfd39076f62685c2add53f96b3d833967d62f6f7fd"
+    },
+    {
+      "index": 19,
+      "id": "SENT019",
+      "class_name": "Chấp nhận",
+      "zip_path": "dataset/train/Chấp nhận/230679.mp4",
+      "filename": "SENT019.mp4",
+      "size_bytes": 38985,
+      "sha256": "02611e7a74c1bd2dc22c4f1b66473f660800fe4467ed5a206183713375df4fb1"
+    },
+    {
+      "index": 20,
+      "id": "SENT020",
+      "class_name": "Chậm lại",
+      "zip_path": "dataset/train/Chậm lại/105814.mp4",
+      "filename": "SENT020.mp4",
+      "size_bytes": 45349,
+      "sha256": "2328017cd88e957c71ef6fe2729a646c16066573c3a0352c004b373e4fe6a335"
+    },
+    {
+      "index": 21,
+      "id": "SENT021",
+      "class_name": "Con gấu",
+      "zip_path": "dataset/train/Con gấu/128276.mp4",
+      "filename": "SENT021.mp4",
+      "size_bytes": 20351,
+      "sha256": "a09d3c34137ea3b58cb4ecdce25e5a5a938a000f2d528ad3722e36309ed5a6f0"
+    },
+    {
+      "index": 22,
+      "id": "SENT022",
+      "class_name": "Cá",
+      "zip_path": "dataset/train/Cá/109767.mp4",
+      "filename": "SENT022.mp4",
+      "size_bytes": 93491,
+      "sha256": "a4713e9dabd8f727939f23cda28408953c320c8180fe5dc3c1acf3381b7c9f1f"
+    },
+    {
+      "index": 23,
+      "id": "SENT023",
+      "class_name": "Cách ly",
+      "zip_path": "dataset/train/Cách ly/108203.mp4",
+      "filename": "SENT023.mp4",
+      "size_bytes": 41832,
+      "sha256": "45a2971421560e521250a854d9373d841f3f514f88fa4eca1c1b5dc71c224416"
+    },
+    {
+      "index": 24,
+      "id": "SENT024",
+      "class_name": "Cám dỗ",
+      "zip_path": "dataset/train/Cám dỗ/103717.mp4",
+      "filename": "SENT024.mp4",
+      "size_bytes": 43354,
+      "sha256": "4bff4ffc2da0fec3a9c581175c039acd5a152670b20a064dbe93662f3ffed199"
+    },
+    {
+      "index": 25,
+      "id": "SENT025",
+      "class_name": "Có thể",
+      "zip_path": "dataset/train/Có thể/120324.mp4",
+      "filename": "SENT025.mp4",
+      "size_bytes": 49444,
+      "sha256": "b8353f4cac99e743776d08c69bd9c161cf1696391c2b5eb602d92d0facca1b04"
+    },
+    {
+      "index": 26,
+      "id": "SENT026",
+      "class_name": "Cơ thể",
+      "zip_path": "dataset/train/Cơ thể/132537.mp4",
+      "filename": "SENT026.mp4",
+      "size_bytes": 39948,
+      "sha256": "124fc7913f3f795451b6469a87c64bd178af61081c5dc0ebb010ef6116bb5cc1"
+    },
+    {
+      "index": 27,
+      "id": "SENT027",
+      "class_name": "Cảm ơn",
+      "zip_path": "dataset/train/Cảm ơn/125990.mp4",
+      "filename": "SENT027.mp4",
+      "size_bytes": 38214,
+      "sha256": "9377daab27221090dbef7d4820350ca0b7ceec86b9046d316a8281e76cf08741"
+    },
+    {
+      "index": 28,
+      "id": "SENT028",
+      "class_name": "Cần",
+      "zip_path": "dataset/train/Cần/137778.mp4",
+      "filename": "SENT028.mp4",
+      "size_bytes": 38933,
+      "sha256": "351d3718b3fa221a9ce59684aeff9b966c7d3032b7405a0999714dc3781d4ed9"
+    },
+    {
+      "index": 29,
+      "id": "SENT029",
+      "class_name": "Cứu",
+      "zip_path": "dataset/train/Cứu/121369.mp4",
+      "filename": "SENT029.mp4",
+      "size_bytes": 28352,
+      "sha256": "0f956d461a3d724127014216a7795cace79105d0d08d295488fa3901ce76c590"
+    },
+    {
+      "index": 30,
+      "id": "SENT030",
+      "class_name": "Dạy dỗ",
+      "zip_path": "dataset/train/Dạy dỗ/113266.mp4",
+      "filename": "SENT030.mp4",
+      "size_bytes": 33376,
+      "sha256": "425b16bea0a77f6b51d97b0e7cc3a6c3cdf434743b855be1a4196613af351c60"
+    },
+    {
+      "index": 31,
+      "id": "SENT031",
+      "class_name": "Dễ",
+      "zip_path": "dataset/train/Dễ/190872.mp4",
+      "filename": "SENT031.mp4",
+      "size_bytes": 38168,
+      "sha256": "e5f876a86e1b11f584a4c0be54a2af64b94ad5b7d46a5ead5701f983ab239053"
+    },
+    {
+      "index": 32,
+      "id": "SENT032",
+      "class_name": "Ghét",
+      "zip_path": "dataset/train/Ghét/130094.mp4",
+      "filename": "SENT032.mp4",
+      "size_bytes": 18257,
+      "sha256": "69c79af738c2133ee880b7989818ebe00359ccec78cfb3a135e9c9598c5a92cb"
+    },
+    {
+      "index": 33,
+      "id": "SENT033",
+      "class_name": "Giúp",
+      "zip_path": "dataset/train/Giúp/110644.mp4",
+      "filename": "SENT033.mp4",
+      "size_bytes": 34769,
+      "sha256": "c665637fe90cbb7edfe40b5a94d314d0d23fb237b80c7b9fce7883b383225c8d"
+    },
+    {
+      "index": 34,
+      "id": "SENT034",
+      "class_name": "Ho",
+      "zip_path": "dataset/train/Ho/114835.mp4",
+      "filename": "SENT034.mp4",
+      "size_bytes": 35294,
+      "sha256": "3fdf15924bfb219c55e559de1c20fa15b3511cdddd01f191f4993fd4664e9864"
+    },
+    {
+      "index": 35,
+      "id": "SENT035",
+      "class_name": "Hy sinh",
+      "zip_path": "dataset/train/Hy sinh/102805.mp4",
+      "filename": "SENT035.mp4",
+      "size_bytes": 51800,
+      "sha256": "5574e7c2123ec62c51a3bba073be5fec64a0ea9111649bf4be300697514f57cf"
+    },
+    {
+      "index": 36,
+      "id": "SENT036",
+      "class_name": "Hâm mộ",
+      "zip_path": "dataset/train/Hâm mộ/205409.mp4",
+      "filename": "SENT036.mp4",
+      "size_bytes": 34055,
+      "sha256": "837b0bed6882f2962f615df567b4a7ea344b448396a85874ca3a8678a80e6ef8"
+    },
+    {
+      "index": 37,
+      "id": "SENT037",
+      "class_name": "Hôm nay",
+      "zip_path": "dataset/train/Hôm nay/112861.mp4",
+      "filename": "SENT037.mp4",
+      "size_bytes": 29311,
+      "sha256": "e5c8d7b7062a440b9ecec7d4f548e2e0615b7da40f239a80bd4f131d19d6f2f8"
+    },
+    {
+      "index": 38,
+      "id": "SENT038",
+      "class_name": "Họ",
+      "zip_path": "dataset/train/Họ/153872.mp4",
+      "filename": "SENT038.mp4",
+      "size_bytes": 45884,
+      "sha256": "c205ea6e3019a947d8e981d35955568c82bc661f0bee77232848324c99bf5b6b"
+    },
+    {
+      "index": 39,
+      "id": "SENT039",
+      "class_name": "Học sinh",
+      "zip_path": "dataset/train/Học sinh/411797.mp4",
+      "filename": "SENT039.mp4",
+      "size_bytes": 40193,
+      "sha256": "effae90c93918f979741db8480b2f9e48173a5527a87a692c6148b4c0cd8802e"
+    },
+    {
+      "index": 40,
+      "id": "SENT040",
+      "class_name": "Khai báo",
+      "zip_path": "dataset/train/Khai báo/121753.mp4",
+      "filename": "SENT040.mp4",
+      "size_bytes": 43278,
+      "sha256": "79c3aeb5648b9aeb58fd37bd4141340f6d14dff19a7df8589deb8a5aac1d394a"
+    },
+    {
+      "index": 41,
+      "id": "SENT041",
+      "class_name": "Khu cách ly",
+      "zip_path": "dataset/train/Khu cách ly/154118.mp4",
+      "filename": "SENT041.mp4",
+      "size_bytes": 35356,
+      "sha256": "0460696af4c86439098cc68fa6f0b299d80a7888797210f42f32068b283e9498"
+    },
+    {
+      "index": 42,
+      "id": "SENT042",
+      "class_name": "Khóc",
+      "zip_path": "dataset/train/Khóc/101206.mp4",
+      "filename": "SENT042.mp4",
+      "size_bytes": 31347,
+      "sha256": "e00fb515fb05d6f3503b1eb952f0fe63f161367998700407a224e9d01fc9e83e"
+    },
+    {
+      "index": 43,
+      "id": "SENT043",
+      "class_name": "Khẩu trang",
+      "zip_path": "dataset/train/Khẩu trang/283700.mp4",
+      "filename": "SENT043.mp4",
+      "size_bytes": 57780,
+      "sha256": "1dfd841f609931db00dd689c454c755735b563e24699354db0f6a86621425e90"
+    },
+    {
+      "index": 44,
+      "id": "SENT044",
+      "class_name": "Kết hôn",
+      "zip_path": "dataset/train/Kết hôn/162535.mp4",
+      "filename": "SENT044.mp4",
+      "size_bytes": 52395,
+      "sha256": "a05d9b53ab8efe837a618c44eb4646584d2f3d07d657f13139ab32757b4d7ea6"
+    },
+    {
+      "index": 45,
+      "id": "SENT045",
+      "class_name": "Lo lắng",
+      "zip_path": "dataset/train/Lo lắng/355570.mp4",
+      "filename": "SENT045.mp4",
+      "size_bytes": 55194,
+      "sha256": "ce509df4157449cd18a534e55260083a8bb6260e216121f395768182dd01486e"
+    },
+    {
+      "index": 46,
+      "id": "SENT046",
+      "class_name": "Lây bệnh",
+      "zip_path": "dataset/train/Lây bệnh/114338.mp4",
+      "filename": "SENT046.mp4",
+      "size_bytes": 45099,
+      "sha256": "629b7e53800212bae0970e7dffbb53aab8b9e43b8c64eccd20e1823af7273df7"
+    },
+    {
+      "index": 47,
+      "id": "SENT047",
+      "class_name": "Mua",
+      "zip_path": "dataset/train/Mua/138817.mp4",
+      "filename": "SENT047.mp4",
+      "size_bytes": 20011,
+      "sha256": "1029810c89e41db8faa9773f2272a5da7f6ac1af85cb530229c7e26f637beb21"
+    },
+    {
+      "index": 48,
+      "id": "SENT048",
+      "class_name": "Mời vào",
+      "zip_path": "dataset/train/Mời vào/102689.mp4",
+      "filename": "SENT048.mp4",
+      "size_bytes": 84140,
+      "sha256": "6a6edd97505d5c3318f966b786b85bb61f37e4fb16c381e4753e7e07d6247f36"
+    },
+    {
+      "index": 49,
+      "id": "SENT049",
+      "class_name": "Nghe",
+      "zip_path": "dataset/train/Nghe/130353.mp4",
+      "filename": "SENT049.mp4",
+      "size_bytes": 60381,
+      "sha256": "fd9c144bbced3c234afbcd5613bb344c5a77aaae15e87282567b60b13d6beb07"
+    },
+    {
+      "index": 50,
+      "id": "SENT050",
+      "class_name": "Nghỉ ngơi",
+      "zip_path": "dataset/train/Nghỉ ngơi/108491.mp4",
+      "filename": "SENT050.mp4",
+      "size_bytes": 36180,
+      "sha256": "e43ae0d569019c12651f0aae1d2bc75c513c7e175147f918c83d89dce9374ad1"
+    },
+    {
+      "index": 51,
+      "id": "SENT051",
+      "class_name": "Ngón tay",
+      "zip_path": "dataset/train/Ngón tay/151426.mp4",
+      "filename": "SENT051.mp4",
+      "size_bytes": 44490,
+      "sha256": "28aba79bdb11b582f6862ef82693922abf1cc453a2c46d9e61afa56cfefd4fa7"
+    },
+    {
+      "index": 52,
+      "id": "SENT052",
+      "class_name": "Nhà",
+      "zip_path": "dataset/train/Nhà/134985.mp4",
+      "filename": "SENT052.mp4",
+      "size_bytes": 47497,
+      "sha256": "2b53c7a7249a8d74fd9cea6825c3317e592062c95be9a60defa8df166a9467d8"
+    },
+    {
+      "index": 53,
+      "id": "SENT053",
+      "class_name": "Nhìn",
+      "zip_path": "dataset/train/Nhìn/114594.mp4",
+      "filename": "SENT053.mp4",
+      "size_bytes": 41589,
+      "sha256": "ced7593440ae85549e7a8bc14bbe9c5b6ec8f23cc99d52ac908d0a84450b5fb4"
+    },
+    {
+      "index": 54,
+      "id": "SENT054",
+      "class_name": "Nhầm",
+      "zip_path": "dataset/train/Nhầm/409478.mp4",
+      "filename": "SENT054.mp4",
+      "size_bytes": 54282,
+      "sha256": "09dd4d790f810ee45f5fcc196c1649e434943ce1e22402c24c0ad40382f76f8e"
+    },
+    {
+      "index": 55,
+      "id": "SENT055",
+      "class_name": "Nhớ",
+      "zip_path": "dataset/train/Nhớ/139019.mp4",
+      "filename": "SENT055.mp4",
+      "size_bytes": 56710,
+      "sha256": "3329ffbae01f6310d535c0a110e02c9bbb09fb910be19d639b1057ba42313f9b"
+    },
+    {
+      "index": 56,
+      "id": "SENT056",
+      "class_name": "Nói",
+      "zip_path": "dataset/train/Nói/134305.mp4",
+      "filename": "SENT056.mp4",
+      "size_bytes": 37559,
+      "sha256": "630a004d6ad2a0c304098ee6337c1b8e6a1c233b8d52f920112735fed9ff0a20"
+    },
+    {
+      "index": 57,
+      "id": "SENT057",
+      "class_name": "Nói xấu",
+      "zip_path": "dataset/train/Nói xấu/102973.mp4",
+      "filename": "SENT057.mp4",
+      "size_bytes": 16680,
+      "sha256": "471e57dbad6d279920df3e851b4893f614852347b29160ce266e0a08d0545624"
+    },
+    {
+      "index": 58,
+      "id": "SENT058",
+      "class_name": "Nôn ói",
+      "zip_path": "dataset/train/Nôn ói/116547.mp4",
+      "filename": "SENT058.mp4",
+      "size_bytes": 42893,
+      "sha256": "824a8b3bae6b33e2e9e3be77e60592b34c29d4d4e0dbe773219a06a68a7a6920"
+    },
+    {
+      "index": 59,
+      "id": "SENT059",
+      "class_name": "Nặng",
+      "zip_path": "dataset/train/Nặng/116093.mp4",
+      "filename": "SENT059.mp4",
+      "size_bytes": 54265,
+      "sha256": "9ec8d24df6d863017dafc52d2a774b6e9e8a3d998d29854c7ef6cdc2c1d06e82"
+    },
+    {
+      "index": 60,
+      "id": "SENT060",
+      "class_name": "Phía sau",
+      "zip_path": "dataset/train/Phía sau/153945.mp4",
+      "filename": "SENT060.mp4",
+      "size_bytes": 42543,
+      "sha256": "5d4142e25c14275bf3ad86e44a1b2a0fe0c331fc50b4b5be6866dc8d6e080aa0"
+    },
+    {
+      "index": 61,
+      "id": "SENT061",
+      "class_name": "Phạt",
+      "zip_path": "dataset/train/Phạt/199704.mp4",
+      "filename": "SENT061.mp4",
+      "size_bytes": 22520,
+      "sha256": "1c306c2ccc77125a14798833b727262d04247226f4c433bf8735bb1a6e724b4b"
+    },
+    {
+      "index": 62,
+      "id": "SENT062",
+      "class_name": "Phỏng vấn",
+      "zip_path": "dataset/train/Phỏng vấn/127529.mp4",
+      "filename": "SENT062.mp4",
+      "size_bytes": 27782,
+      "sha256": "3f0255f60cf4cbf5d995bfaa9d24b507d89dc966a27bb24b168db4e856cbfb7a"
+    },
+    {
+      "index": 63,
+      "id": "SENT063",
+      "class_name": "Phục hồi",
+      "zip_path": "dataset/train/Phục hồi/106402.mp4",
+      "filename": "SENT063.mp4",
+      "size_bytes": 34327,
+      "sha256": "4d38b8c3b61181ca3d68b2694792d88b62d359dc67c2f6ddfa4e25564cbe5d25"
+    },
+    {
+      "index": 64,
+      "id": "SENT064",
+      "class_name": "Rau",
+      "zip_path": "dataset/train/Rau/132146.mp4",
+      "filename": "SENT064.mp4",
+      "size_bytes": 42765,
+      "sha256": "334eee22e2408694a90d96e6ebc639386c8060c7e996953baf160c1ce4c39730"
+    },
+    {
+      "index": 65,
+      "id": "SENT065",
+      "class_name": "Rẽ phải",
+      "zip_path": "dataset/train/Rẽ phải/108060.mp4",
+      "filename": "SENT065.mp4",
+      "size_bytes": 103346,
+      "sha256": "dd3eeb8aeaa3a6cd63f93c0becc31dfc6e1173c734342d8a9d5a38f0a33f94db"
+    },
+    {
+      "index": 66,
+      "id": "SENT066",
+      "class_name": "Rẽ trái",
+      "zip_path": "dataset/train/Rẽ trái/108105.mp4",
+      "filename": "SENT066.mp4",
+      "size_bytes": 47028,
+      "sha256": "a3212716be824a8a49766be3b6ece4af0170b43c2b378b698c9b82562ade3077"
+    },
+    {
+      "index": 67,
+      "id": "SENT067",
+      "class_name": "San sẻ",
+      "zip_path": "dataset/train/San sẻ/180089.mp4",
+      "filename": "SENT067.mp4",
+      "size_bytes": 48573,
+      "sha256": "db7e5aaa403c6daf380b510ae445bb3c4c0ac416638e1922ed4771c21a89840d"
+    },
+    {
+      "index": 68,
+      "id": "SENT068",
+      "class_name": "Sốt",
+      "zip_path": "dataset/train/Sốt/466346.mp4",
+      "filename": "SENT068.mp4",
+      "size_bytes": 35747,
+      "sha256": "4448b196b5d889d108601546a3dd3a75ed84ab71d8975fac9735efd6642e8485"
+    },
+    {
+      "index": 69,
+      "id": "SENT069",
+      "class_name": "Sử dụng",
+      "zip_path": "dataset/train/Sử dụng/158900.mp4",
+      "filename": "SENT069.mp4",
+      "size_bytes": 30481,
+      "sha256": "cc9641e90e9acce483a488333760ea83bc23a9f044d0afb775b53bbc24d990e2"
+    },
+    {
+      "index": 70,
+      "id": "SENT070",
+      "class_name": "Thích",
+      "zip_path": "dataset/train/Thích/141043.mp4",
+      "filename": "SENT070.mp4",
+      "size_bytes": 27563,
+      "sha256": "c06644845b3071bf540b568319efa940eb484d3baeec50c77f917789523de38e"
+    },
+    {
+      "index": 71,
+      "id": "SENT071",
+      "class_name": "Thăm",
+      "zip_path": "dataset/train/Thăm/164879.mp4",
+      "filename": "SENT071.mp4",
+      "size_bytes": 31758,
+      "sha256": "018e11ab39358003e4fffc700691d9ad0ada084e5291e6226eb08fd28c37b72d"
+    },
+    {
+      "index": 72,
+      "id": "SENT072",
+      "class_name": "Thương",
+      "zip_path": "dataset/train/Thương/266457.mp4",
+      "filename": "SENT072.mp4",
+      "size_bytes": 38165,
+      "sha256": "9d7f0128c99b80a92e182386c35e99bb43de863a4a138efde2cfa45d65ab94de"
+    },
+    {
+      "index": 73,
+      "id": "SENT073",
+      "class_name": "Thất lạc",
+      "zip_path": "dataset/train/Thất lạc/143015.mp4",
+      "filename": "SENT073.mp4",
+      "size_bytes": 38283,
+      "sha256": "8447cddd6bd3f130cf0aff16531ff453eff309cb58ad6afa7d8c1cf06a3cd897"
+    },
+    {
+      "index": 74,
+      "id": "SENT074",
+      "class_name": "Thức dậy",
+      "zip_path": "dataset/train/Thức dậy/119116.mp4",
+      "filename": "SENT074.mp4",
+      "size_bytes": 40632,
+      "sha256": "54fbaf62c118f926ba1ad70c911e74b0037ea41abc200161d0c5f8f564ec8a42"
+    },
+    {
+      "index": 75,
+      "id": "SENT075",
+      "class_name": "Thức ăn",
+      "zip_path": "dataset/train/Thức ăn/154909.mp4",
+      "filename": "SENT075.mp4",
+      "size_bytes": 31791,
+      "sha256": "dcae2dd6808a5161e9fe2620c1e8b141e02b86e8c5dafe5f24647d96b76f0342"
+    },
+    {
+      "index": 76,
+      "id": "SENT076",
+      "class_name": "Trưa",
+      "zip_path": "dataset/train/Trưa/127965.mp4",
+      "filename": "SENT076.mp4",
+      "size_bytes": 51934,
+      "sha256": "efad2ccec47c2be18b5f4bc71069ed092a3f2c75c89449ee5c537f1100eedea9"
+    },
+    {
+      "index": 77,
+      "id": "SENT077",
+      "class_name": "Trường học",
+      "zip_path": "dataset/train/Trường học/105506.mp4",
+      "filename": "SENT077.mp4",
+      "size_bytes": 45839,
+      "sha256": "d71775bd0bf399d359c3cd5c2cab411badd614d8a5bbb4fbe8c977b38716eff9"
+    },
+    {
+      "index": 78,
+      "id": "SENT078",
+      "class_name": "Tôi",
+      "zip_path": "dataset/train/Tôi/145814.mp4",
+      "filename": "SENT078.mp4",
+      "size_bytes": 46477,
+      "sha256": "8dbc0ab3b1e007ad90646f2928c0780c0fa6f2a90cddfd0ea1f9f471824578a1"
+    },
+    {
+      "index": 79,
+      "id": "SENT079",
+      "class_name": "Tập luyện",
+      "zip_path": "dataset/train/Tập luyện/139434.mp4",
+      "filename": "SENT079.mp4",
+      "size_bytes": 35064,
+      "sha256": "678d157dbd545481b35df999616d7cca0a4108175a4d4a63055fe1b71d185988"
+    },
+    {
+      "index": 80,
+      "id": "SENT080",
+      "class_name": "Tối",
+      "zip_path": "dataset/train/Tối/245121.mp4",
+      "filename": "SENT080.mp4",
+      "size_bytes": 37430,
+      "sha256": "ff34fe2cbbc8ac49003e51d5440ddb25eaf7b12946f72b73a4ce7706cb798d86"
+    },
+    {
+      "index": 81,
+      "id": "SENT081",
+      "class_name": "Uống",
+      "zip_path": "dataset/train/Uống/101640.mp4",
+      "filename": "SENT081.mp4",
+      "size_bytes": 31047,
+      "sha256": "a04bfa3f59cbaa16f8d5354149e12bcb453187ec3054adf00a054c80df3b1a15"
+    },
+    {
+      "index": 82,
+      "id": "SENT082",
+      "class_name": "Virus",
+      "zip_path": "dataset/train/Virus/365971.mp4",
+      "filename": "SENT082.mp4",
+      "size_bytes": 47446,
+      "sha256": "5c502f4ed35b042a6d247737088df6b483b8c1ac75afa34ac66db3179c1be487"
+    },
+    {
+      "index": 83,
+      "id": "SENT083",
+      "class_name": "Vâng lời",
+      "zip_path": "dataset/train/Vâng lời/121322.mp4",
+      "filename": "SENT083.mp4",
+      "size_bytes": 46337,
+      "sha256": "32711fe35ae634a9671c3c96068457d73b7f2593dcafa635b764f2d3784ebe44"
+    },
+    {
+      "index": 84,
+      "id": "SENT084",
+      "class_name": "Xa",
+      "zip_path": "dataset/train/Xa/117031.mp4",
+      "filename": "SENT084.mp4",
+      "size_bytes": 53006,
+      "sha256": "7fb140831f26238107302c08404769cb06225ae8d8edb571c7ad579697bc7a00"
+    },
+    {
+      "index": 85,
+      "id": "SENT085",
+      "class_name": "Xe máy",
+      "zip_path": "dataset/train/Xe máy/143941.mp4",
+      "filename": "SENT085.mp4",
+      "size_bytes": 44022,
+      "sha256": "bb018bf705f925fc4d1b5bda4b838d1c99e0cfba06f14b5dcf11a7027376568b"
+    },
+    {
+      "index": 86,
+      "id": "SENT086",
+      "class_name": "Xe đạp",
+      "zip_path": "dataset/train/Xe đạp/138399.mp4",
+      "filename": "SENT086.mp4",
+      "size_bytes": 57177,
+      "sha256": "fa272f345f1697fef02139d1b88e9557458f0cdb77a4f26b060189e5bc0c5852"
+    },
+    {
+      "index": 87,
+      "id": "SENT087",
+      "class_name": "Xin lỗi",
+      "zip_path": "dataset/train/Xin lỗi/230521.mp4",
+      "filename": "SENT087.mp4",
+      "size_bytes": 50624,
+      "sha256": "42e933b9dc9fcf563682449c744d9e2e520773834e53e538e3b80d68be50a6e7"
+    },
+    {
+      "index": 88,
+      "id": "SENT088",
+      "class_name": "Xin phép",
+      "zip_path": "dataset/train/Xin phép/182760.mp4",
+      "filename": "SENT088.mp4",
+      "size_bytes": 36554,
+      "sha256": "fce3d42a75505bc385d7050041ba7ec395bbf73c02d90a2d755ba2c28b66b22e"
+    },
+    {
+      "index": 89,
+      "id": "SENT089",
+      "class_name": "Xuất viện",
+      "zip_path": "dataset/train/Xuất viện/132653.mp4",
+      "filename": "SENT089.mp4",
+      "size_bytes": 49231,
+      "sha256": "51737f837221e8046bfa9963038da0000d91a9fcab9987843804a5a12a74a5c4"
+    },
+    {
+      "index": 90,
+      "id": "SENT090",
+      "class_name": "Xúc động",
+      "zip_path": "dataset/train/Xúc động/127172.mp4",
+      "filename": "SENT090.mp4",
+      "size_bytes": 53809,
+      "sha256": "810442e44ed205454156b69231e022c9b440f452ee9579f16108e842b0e3b88d"
+    },
+    {
+      "index": 91,
+      "id": "SENT091",
+      "class_name": "Áp dụng",
+      "zip_path": "dataset/train/Áp dụng/106814.mp4",
+      "filename": "SENT091.mp4",
+      "size_bytes": 48177,
+      "sha256": "834c3e6994c0711d8aab7a4c4374c6a48e5a2ecc5c0595f8eaffb9f8041568ee"
+    },
+    {
+      "index": 92,
+      "id": "SENT092",
+      "class_name": "Ô tô",
+      "zip_path": "dataset/train/Ô tô/132663.mp4",
+      "filename": "SENT092.mp4",
+      "size_bytes": 42922,
+      "sha256": "f19675e4d77d15ac1b24b06344f71c8872b7c1119a93a36c3fd44d548d894e13"
+    },
+    {
+      "index": 93,
+      "id": "SENT093",
+      "class_name": "Ăn",
+      "zip_path": "dataset/train/Ăn/148050.mp4",
+      "filename": "SENT093.mp4",
+      "size_bytes": 35414,
+      "sha256": "a5249ccf055d2502ad8f95a95e10664ac77535cecb2c33510772a5372bb6d990"
+    },
+    {
+      "index": 94,
+      "id": "SENT094",
+      "class_name": "Ăn mừng",
+      "zip_path": "dataset/train/Ăn mừng/133659.mp4",
+      "filename": "SENT094.mp4",
+      "size_bytes": 27714,
+      "sha256": "f756b2f03d9e7537cbe0b11b3a2e147c875bc8848715ca9bb53b59d3d7704626"
+    },
+    {
+      "index": 95,
+      "id": "SENT095",
+      "class_name": "Đi",
+      "zip_path": "dataset/train/Đi/129751.mp4",
+      "filename": "SENT095.mp4",
+      "size_bytes": 43745,
+      "sha256": "e0da7ab79a3fa9b0e31cc3b8bb23f10a56b4711e8b2ac92e5e814017ec4c4f7b"
+    },
+    {
+      "index": 96,
+      "id": "SENT096",
+      "class_name": "Đâu",
+      "zip_path": "dataset/train/Đâu/168093.mp4",
+      "filename": "SENT096.mp4",
+      "size_bytes": 34184,
+      "sha256": "65dae8c43b17ba1c08e127bc4cc92f44c3af019d8715dc9ec784ce1f244ee8c4"
+    },
+    {
+      "index": 97,
+      "id": "SENT097",
+      "class_name": "Đầu",
+      "zip_path": "dataset/train/Đầu/127560.mp4",
+      "filename": "SENT097.mp4",
+      "size_bytes": 43024,
+      "sha256": "ae6cc6037dce0e1702b6a592a50be444131e4e144d6998c69f44cd7ee7656e62"
+    },
+    {
+      "index": 98,
+      "id": "SENT098",
+      "class_name": "Đẹp",
+      "zip_path": "dataset/train/Đẹp/158104.mp4",
+      "filename": "SENT098.mp4",
+      "size_bytes": 71384,
+      "sha256": "ba281bb10e3474f784009db75b1e97f9e4b2b097740f4efb036038b3448045ce"
+    },
+    {
+      "index": 99,
+      "id": "SENT099",
+      "class_name": "Đồng ý",
+      "zip_path": "dataset/train/Đồng ý/131757.mp4",
+      "filename": "SENT099.mp4",
+      "size_bytes": 38465,
+      "sha256": "98f31e92141dc604b5e78d57dc203ecddc50fb19e55106371778c6049c8ccc4a"
+    },
+    {
+      "index": 100,
+      "id": "SENT100",
+      "class_name": "Ủng hộ",
+      "zip_path": "dataset/train/Ủng hộ/631971.mp4",
+      "filename": "SENT100.mp4",
+      "size_bytes": 47451,
+      "sha256": "9934525b2ec75b3640652fded9a0c04e288810801b0b165d97e55a832ce86d84"
+    }
+  ]
+}

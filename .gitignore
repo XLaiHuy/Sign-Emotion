@@ -1,0 +1,106 @@
+# ==========================================
+# SignEmo .gitignore — Production & Security
+# ==========================================
+
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Production build outputs
+dist/
+build/
+output/
+coverage/
+*.tsbuildinfo
+
+# Environment variables & secrets (CRITICAL: NEVER LEAK)
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+*.p12
+*.pfx
+*.jks
+*.keystore
+*.crt
+*.cer
+*.der
+id_rsa*
+secrets/
+credentials*.json
+service-account*.json
+.aws/
+.ssh/
+
+# User data, backups and session exports (Privacy boundaries)
+*vault-backup*
+*transcript-export*
+research-data/
+datasets/
+
+# Large model binaries & checkpoints (stored via scripts/CDN, never in Git)
+public/models/*.onnx
+public/models/*.task
+public/models/local/
+public/models/moonshine/
+public/runtime/
+
+# Media files (Ignore raw media, whitelist required web assets)
+*.mp4
+*.webm
+*.y4m
+*.wav
+*.mp3
+*.m4a
+*.flac
+*.mov
+*.avi
+!public/demo/signemo-16x9.mp4
+!public/demo/signemo-intro-*.mp4
+!public/sign-language/*.mp4
+!public/signs/*.mp4
+
+# Operating System files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# IDE & Editor settings
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+*.swp
+*.swo
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# Logs & temporary caches
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.playwright-cli/
+.cache/
+.pytest_cache/
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+.wrangler/
+supabase/.temp/
+supabase/.branches/
+.codegraph/
+
+# Local maintenance scripts
+*.bat

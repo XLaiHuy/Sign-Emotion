@@ -1,0 +1,127 @@
+{
+  "version": "emotiefflib-enet-b2-8-demo-v1",
+  "assets": [
+    {
+      "url": "/models/enet_b2_8.onnx",
+      "bytes": 30779724,
+      "sha256": "180a9d4845b59393de4511598a0d1d34b705034691ea32959ce5009db7cf52b7",
+      "source": "https://raw.githubusercontent.com/sb-ai-lab/EmotiEffLib/c018fcf96c79c3bd9184f1c9438fe2095c9f1943/models/affectnet_emotions/onnx/enet_b2_8.onnx",
+      "license": "Apache-2.0 — EmotiEffLib"
+    },
+    {
+      "url": "/models/face_landmarker.task",
+      "bytes": 3758596,
+      "sha256": "64184e229b263107bc2b804c6625db1341ff2bb731874b0bcc2fe6544e0bc9ff",
+      "source": "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task",
+      "license": "Apache-2.0 — MediaPipe"
+    },
+    {
+      "url": "/runtime/mediapipe/vision_wasm_internal.js",
+      "bytes": 335393,
+      "sha256": "7c652617b5bef832f42878ce8c5f752b0724bca6054e4bc1013a37d4b1949723",
+      "source": "@mediapipe/tasks-vision@1.1.0/wasm/vision_wasm_internal.js",
+      "license": "Apache-2.0"
+    },
+    {
+      "url": "/runtime/mediapipe/vision_wasm_internal.mjs",
+      "bytes": 335430,
+      "sha256": "b58c4b40c197f288a0eca3b38737ca64fe6e4415836aad4a03c2c05400fb2756",
+      "source": "@mediapipe/tasks-vision@1.1.0/wasm/vision_wasm_internal.js + ESM wrapper and strict-mode debug scope compatibility",
+      "license": "Apache-2.0"
+    },
+    {
+      "url": "/runtime/mediapipe/vision_wasm_internal.wasm",
+      "bytes": 12997248,
+      "sha256": "782eda3ec1f414fdb4f1d66a8b59093eb4d5ab437e06117796abf05962d68eef",
+      "source": "@mediapipe/tasks-vision@1.1.0/wasm/vision_wasm_internal.wasm",
+      "license": "Apache-2.0"
+    },
+    {
+      "url": "/runtime/mediapipe/vision_wasm_module_internal.js",
+      "bytes": 335431,
+      "sha256": "70eff3956521b7de058d7173a4935c95e4a223c26ea624b9f5a936d3a043dcb0",
+      "source": "@mediapipe/tasks-vision@1.1.0/wasm/vision_wasm_module_internal.js",
+      "license": "Apache-2.0"
+    },
+    {
+      "url": "/runtime/mediapipe/vision_wasm_module_internal.mjs",
+      "bytes": 335468,
+      "sha256": "f4b52784a5bce20d9eb85129b74db4a273ab727fd3f321b6d7e94d295b783e76",
+      "source": "@mediapipe/tasks-vision@1.1.0/wasm/vision_wasm_module_internal.js + ESM wrapper and strict-mode debug scope compatibility",
+      "license": "Apache-2.0"
+    },
+    {
+      "url": "/runtime/mediapipe/vision_wasm_module_internal.wasm",
+      "bytes": 12997272,
+      "sha256": "ee03b14a878e6c3c053a1bfa62e166dc45244be54dc0bbe61c578f710b771f6a",
+      "source": "@mediapipe/tasks-vision@1.1.0/wasm/vision_wasm_module_internal.wasm",
+      "license": "Apache-2.0"
+    },
+    {
+      "url": "/runtime/mediapipe/vision_wasm_nosimd_internal.js",
+      "bytes": 335196,
+      "sha256": "510fc70a170eb8b46767a7abab2af89a7a8341fa5b3ebfb8a5de41a79b7fa9df",
+      "source": "@mediapipe/tasks-vision@1.1.0/wasm/vision_wasm_nosimd_internal.js",
+      "license": "Apache-2.0"
+    },
+    {
+      "url": "/runtime/mediapipe/vision_wasm_nosimd_internal.mjs",
+      "bytes": 335233,
+      "sha256": "3888c47b2ade788974ca322159790231966a5c834bd9a6a34da226893494542c",
+      "source": "@mediapipe/tasks-vision@1.1.0/wasm/vision_wasm_nosimd_internal.js + ESM wrapper and strict-mode debug scope compatibility",
+      "license": "Apache-2.0"
+    },
+    {
+      "url": "/runtime/mediapipe/vision_wasm_nosimd_internal.wasm",
+      "bytes": 12168316,
+      "sha256": "b802041d105876865d6a0806f2ff7c4419a7f1b80bc01340fe36e759c2030011",
+      "source": "@mediapipe/tasks-vision@1.1.0/wasm/vision_wasm_nosimd_internal.wasm",
+      "license": "Apache-2.0"
+    },
+    {
+      "url": "/runtime/ort/ort-wasm-simd-threaded.mjs",
+      "bytes": 24381,
+      "sha256": "e13f7f94fc51b4ca72b12faeb1ee95f4ace6dfbc8939bc718aabdc0a27c4299b",
+      "source": "onnxruntime-web@1.30.0/dist/ort-wasm-simd-threaded.mjs",
+      "license": "MIT"
+    },
+    {
+      "url": "/runtime/ort/ort-wasm-simd-threaded.wasm",
+      "bytes": 14239897,
+      "sha256": "3398c10d07d229bd91b364548e130e0e51a8e5704b88c7c083ebbeb78842dee2",
+      "source": "onnxruntime-web@1.30.0/dist/ort-wasm-simd-threaded.wasm",
+      "license": "MIT"
+    }
+  ],
+  "input": {
+    "shape": [
+      1,
+      3,
+      260,
+      260
+    ],
+    "type": "float32",
+    "preprocessing": "Roll-aligned RGB face crop; resize 260x260; scale RGB to 0..1; ImageNet mean [0.485,0.456,0.406], std [0.229,0.224,0.225]; NCHW. Experimental demo profile, not accuracy validated."
+  },
+  "labels": [
+    "anger",
+    "contempt",
+    "disgust",
+    "fear",
+    "happiness",
+    "neutral",
+    "sadness",
+    "surprise"
+  ],
+  "signemoOutputOrder": [
+    "neutral",
+    "happy",
+    "surprised",
+    "sad",
+    "angry",
+    "disgust",
+    "fear",
+    "contempt"
+  ],
+  "sourceRevision": "c018fcf96c79c3bd9184f1c9438fe2095c9f1943"
+}

@@ -1,0 +1,80 @@
+{
+  "single": {
+    "source": "https://github.com/moonshine-ai/moonshine",
+    "commit": "234f60faa0eb388b01cdf7e60aca232af37aefda",
+    "emscripten": "4.0.8",
+    "ort": "1.23.2",
+    "ortCommit": "a83fc4d58cb48eb68890dd689f94f28288cf2278",
+    "license": "MIT",
+    "computeThreads": 1,
+    "requiresIsolation": false,
+    "patchSha256": "058e694d00e89fe9f2feea59ab195840c159f10638097cd66825da8a63e01ec4",
+    "assets": [
+      {
+        "file": "moonshine.mjs",
+        "bytes": 138055,
+        "sha256": "7b38b00b0b14db49e9c6150fb0b0c00961b7a63ed04be03d7dde96cd2e8f5166"
+      },
+      {
+        "file": "moonshine.wasm",
+        "bytes": 13250724,
+        "sha256": "8df872ccf8adaea7c1c64695ba7c9e3ad43c8b04584a34a6f6210b8ed68f4bb1"
+      },
+      {
+        "file": "LICENSE",
+        "bytes": 14180,
+        "sha256": "fa7d1174dd8af6a7cd280be20b80d10095ed4c19b5b20b61a7715c3ad790dc5f"
+      },
+      {
+        "file": "ONNXRUNTIME-LICENSE",
+        "bytes": 1073,
+        "sha256": "2f07c72751aed99790b8a4869cf2311df85a860b22ded05fa22803587a48922c"
+      },
+      {
+        "file": "ONNXRUNTIME-THIRD-PARTY-NOTICES",
+        "bytes": 326866,
+        "sha256": "e9e90971a8e75a9a8ac0c6412e29c1202d079998389915aa485f46c816c3b4cc"
+      }
+    ],
+    "totalModelRuntimeBytes": 46039906
+  },
+  "two": {
+    "source": "https://github.com/moonshine-ai/moonshine",
+    "commit": "234f60faa0eb388b01cdf7e60aca232af37aefda",
+    "emscripten": "4.0.8",
+    "ort": "1.23.2",
+    "ortCommit": "a83fc4d58cb48eb68890dd689f94f28288cf2278",
+    "license": "MIT",
+    "computeThreads": 2,
+    "requiresIsolation": true,
+    "patchSha256": "058e694d00e89fe9f2feea59ab195840c159f10638097cd66825da8a63e01ec4",
+    "assets": [
+      {
+        "file": "moonshine.mjs",
+        "bytes": 156449,
+        "sha256": "5a4ab2270d2bf0aa13f07530fca884e353feabcbd3f681a30736caf3d3aa9466"
+      },
+      {
+        "file": "moonshine.wasm",
+        "bytes": 13183204,
+        "sha256": "99ee9595a2fc2aee1decb78a846c65c9e470df9187c4fc683ffb0e0d77fd487d"
+      },
+      {
+        "file": "LICENSE",
+        "bytes": 14180,
+        "sha256": "fa7d1174dd8af6a7cd280be20b80d10095ed4c19b5b20b61a7715c3ad790dc5f"
+      },
+      {
+        "file": "ONNXRUNTIME-LICENSE",
+        "bytes": 1073,
+        "sha256": "2f07c72751aed99790b8a4869cf2311df85a860b22ded05fa22803587a48922c"
+      },
+      {
+        "file": "ONNXRUNTIME-THIRD-PARTY-NOTICES",
+        "bytes": 326866,
+        "sha256": "e9e90971a8e75a9a8ac0c6412e29c1202d079998389915aa485f46c816c3b4cc"
+      }
+    ],
+    "totalModelRuntimeBytes": 45990780
+  }
+}

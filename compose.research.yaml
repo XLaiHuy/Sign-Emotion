@@ -1,0 +1,5 @@
+# Explicit local R&D overlay. Normal production has no research model binaries.
+services:
+  web:
+    volumes:
+      - ./output/research-assets:/usr/share/nginx/html/research:ro

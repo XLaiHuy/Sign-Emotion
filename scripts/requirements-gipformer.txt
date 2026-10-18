@@ -1,0 +1,4 @@
+# Optional Python reference only; never installed in the production Docker image.
+sherpa-onnx==1.13.8
+sherpa-onnx-core==1.13.8
+numpy==2.2.6

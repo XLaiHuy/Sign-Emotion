@@ -1,0 +1,9 @@
+node_modules
+dist
+output
+.venv
+.codegraph
+public
+doc/archive
+package-lock.json
+scripts/conversation-assets.lock.json

@@ -1,0 +1,67 @@
+{
+  "version": "moonshine-streaming-tiny-vi@quantized_26_08_24",
+  "runtimePackage": "@moonshine-ai/moonshine-wasm",
+  "runtimeVersion": "0.1.5",
+  "sourceRevision": "quantized_26_08_24",
+  "license": "MIT",
+  "runtimeRelease": {
+    "url": "https://github.com/moonshine-ai/moonshine/releases/download/v0.1.5/moonshine-voice-wasm.tar.gz",
+    "bytes": 6558286,
+    "sha256": "c515bf7691e12048f70a92cc82b3b0894c16c3773ffcacb7d48944fb150e4837"
+  },
+  "runtimeAssets": [
+    {
+      "file": "moonshine.mjs",
+      "bytes": 156477,
+      "sha256": "5290b40b974a1ae2dec94ab8b212aef98350a64856726c7bb03de266963915a4"
+    },
+    {
+      "file": "moonshine.wasm",
+      "bytes": 13189013,
+      "sha256": "22fca4a5b2dc50fe36dc68e4d25fab73b0250b71f744d9fea511c3a308b2420a"
+    }
+  ],
+  "sourceBase": "https://download.moonshine.ai/model/tiny-streaming-vi/quantized_26_08_24/",
+  "assets": [
+    {
+      "file": "adapter.ort",
+      "bytes": 1318472,
+      "sha256": "8351344095ce2e7e8dca7a932c102c7976fd5031d9f50946c05fe4e8ea520cab"
+    },
+    {
+      "file": "cross_kv.ort",
+      "bytes": 1288120,
+      "sha256": "0a245cc6b617f9c3a2aebe3ba5e4e12dc6118750fb7e478ccb95fe629abe56cf"
+    },
+    {
+      "file": "decoder_kv.ort",
+      "bytes": 19717336,
+      "sha256": "b398871f7668c667f9853758e1bd5ffb77d1ddf72f90ae73ecd4b1f05b3df1d9"
+    },
+    {
+      "file": "encoder.ort",
+      "bytes": 7772792,
+      "sha256": "4774270b09a51af0bc7d7a6f5d687aa832ef6ca049ea965ba0ca23f965f3f3dd"
+    },
+    {
+      "file": "frontend.model.ort",
+      "bytes": 23176,
+      "sha256": "fb8c8ae3cbc72f28e56a6f7577440b4e41e41a86b183d50ebd3d35215b712a7d"
+    },
+    {
+      "file": "frontend.weights.ort",
+      "bytes": 2093280,
+      "sha256": "beb51a94a57cb33ea740c23d7841ca2855e39fd9df7468a407dfd5eea471d8ca"
+    },
+    {
+      "file": "streaming_config.json",
+      "bytes": 509,
+      "sha256": "d31afd7c2dd5ee9ae3fa232312c5b42cb3e4fe1c6e9c53d885f2bea63023790a"
+    },
+    {
+      "file": "tokenizer.bin",
+      "bytes": 95323,
+      "sha256": "004723b832413eca43dc95f5c1e14311fa78206f81e6bf99ce0e561c657ab209"
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+﻿{
+    "source":  "D:\\Documents\\OLPAI\\output\\shareable\\De_1_Lay_diem_chac\\dataset_cv",
+    "luma":  "0.2126R + 0.7152G + 0.0722B on encoded RGB, range 0-255; whole-image descriptive proxy, not physical exposure",
+    "thresholds":  "Mean luma \u003c60 and \u003e150 are descriptive only, not tuned inference thresholds",
+    "groups":  [
+                   {
+                       "group":  "train, 34",
+                       "count":  240,
+                       "mean_luma_min":  20.582577718832756,
+                       "mean_luma_max":  196.34166637806652,
+                       "images_mean_luma_lt60":  59,
+                       "images_mean_luma_gt150":  37
+                   },
+                   {
+                       "group":  "train, 16",
+                       "count":  240,
+                       "mean_luma_min":  15.530839316609187,
+                       "mean_luma_max":  174.70214838709697,
+                       "images_mean_luma_lt60":  55,
+                       "images_mean_luma_gt150":  18
+                   },
+                   {
+                       "group":  "validation, 16",
+                       "count":  60,
+                       "mean_luma_min":  24.298841871920992,
+                       "mean_luma_max":  208.42350524652167,
+                       "images_mean_luma_lt60":  30,
+                       "images_mean_luma_gt150":  28
+                   },
+                   {
+                       "group":  "validation, 34",
+                       "count":  60,
+                       "mean_luma_min":  79.075171705882326,
+                       "mean_luma_max":  174.00606472626481,
+                       "images_mean_luma_lt60":  0,
+                       "images_mean_luma_gt150":  41
+                   }
+               ],
+    "predictions":  "Unavailable per sample; quality groups cannot be identified with notebook errors"
+}

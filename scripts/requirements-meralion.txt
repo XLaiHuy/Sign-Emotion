@@ -1,0 +1,7 @@
+# Separate PC research venv; never installed into production Docker.
+torch==2.7.1
+transformers==4.49.0
+peft==0.14.0
+omegaconf==2.3.0
+soundfile==0.13.1
+numpy==2.2.6

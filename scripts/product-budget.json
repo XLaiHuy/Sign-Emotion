@@ -1,0 +1,7 @@
+{
+  "baselineDate": "2026-10-14",
+  "baselineProfile": "EmotiEffLib B0 + MediaPipe + PhoWhisper tiny q8/Whisper fallback + Silero + PhoBERT",
+  "baselineBytes": 325013728,
+  "maximumIncreaseBytes": 104857600,
+  "scope": "Unique model/runtime URLs in the selected product manifests. Research profiles must not be bundled automatically. This is asset size, not RAM."
+}

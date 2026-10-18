@@ -1,0 +1,5 @@
+# Offline CPU research only; never bundled into the web image.
+numpy==2.2.6
+onnx==1.18.0
+onnxruntime==1.22.1
+torch==2.7.1

@@ -1,0 +1,23 @@
+# Local-only research build. No tunnel/public container is changed.
+services:
+  web:
+    image: signemo:moonshine-b0-20261017-v31
+    build:
+      context: .
+      args:
+        VITE_AI_PROFILE: pc-candidate
+        VITE_STREAMING_ASR: moonshine
+        VITE_BUILD_ID: local-moonshine-b0-20261017-v31
+    ports:
+      - '127.0.0.1:8093:8080'
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=16m,uid=101,gid=101,mode=1777
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    volumes:
+      - ./output/research-assets/emotieff-b0:/usr/share/nginx/html/research/emotieff-b0:ro
+      - ./output/research-assets/runtime-ort-gpu:/usr/share/nginx/html/research/runtime-ort-gpu:ro
+      # Public NASA/FLEURS fixtures for local repeatable tests only.
+      - ./output/research-assets/benchmark:/usr/share/nginx/html/research/benchmark:ro
+      - ./output/research-assets/evaluation:/usr/share/nginx/html/research/evaluation:ro

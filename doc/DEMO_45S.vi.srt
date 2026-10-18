@@ -1,0 +1,35 @@
+1
+00:00:00,500 --> 00:00:05,500
+SignEmo giúp theo dõi hội thoại bằng phụ đề tiếng Việt.
+
+2
+00:00:06,500 --> 00:00:11,500
+Chuẩn bị trên thiết bị. Chỉ mở camera và micro khi bạn bắt đầu.
+
+3
+00:00:12,500 --> 00:00:15,500
+Mình dùng phụ đề và camera nhé?
+
+4
+00:00:15,500 --> 00:00:17,000
+Được.
+
+5
+00:00:18,500 --> 00:00:24,000
+Rất vui được gặp bạn.
+
+6
+00:00:25,500 --> 00:00:31,000
+Hôm nay tôi hơi buồn.
+
+7
+00:00:32,500 --> 00:00:37,000
+Chuyện này làm tôi bực mình.
+
+8
+00:00:38,000 --> 00:00:41,900
+Gợi ý có thể sai. Hãy hỏi lại khi chưa rõ.
+
+9
+00:00:42,000 --> 00:00:45,000
+SignEmo. Thử và góp ý cùng chúng mình.

@@ -1,0 +1,110 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540" role="img" aria-label="Minh họa SignEmo">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#14261f"/>
+      <stop offset="100%" stop-color="#0c1813"/>
+    </linearGradient>
+    <linearGradient id="cardGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#fbfcf9"/>
+    </linearGradient>
+    <filter id="cardShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#000" flood-opacity="0.1"/>
+    </filter>
+  </defs>
+
+  <!-- Canvas Surface -->
+  <rect width="960" height="540" rx="24" fill="url(#cardGrad)"/>
+  <rect x="2" y="2" width="956" height="536" rx="22" fill="none" stroke="#e1e8dc" stroke-width="2"/>
+
+  <!-- Tablet Bezel Top Bar -->
+  <rect x="36" y="28" width="888" height="56" rx="14" fill="#f0f5ec"/>
+  <circle cx="64" cy="56" r="6" fill="#176d57"/>
+  <text x="82" y="62" fill="#174836" font-family="-apple-system, BlinkMacSystemFont, 'Be Vietnam Pro', sans-serif" font-size="20" font-weight="700">Sign<tspan fill="#176d57">Emo</tspan></text>
+  <rect id="device-badge" x="180" y="44" width="184" height="24" rx="12" fill="#ffffff" stroke="#d5e2d1"/>
+  <text data-frame="device-badge" x="196" y="60" fill="#2d6a4f" font-family="sans-serif" font-size="12" font-weight="600">● 100% TRÊN THIẾT BỊ</text>
+  
+  <rect id="runtime-badge" x="720" y="44" width="184" height="24" rx="12" fill="#e2ede0"/>
+  <text data-frame="runtime-badge" x="736" y="60" fill="#295943" font-family="sans-serif" font-size="12" font-weight="600">ONNX · WebGPU 30FPS</text>
+
+  <!-- Video Camera Simulator Viewport -->
+  <g transform="translate(36, 102)" filter="url(#cardShadow)">
+    <rect width="550" height="270" rx="18" fill="url(#bgGrad)"/>
+    <rect x="1" y="1" width="548" height="268" rx="17" fill="none" stroke="#2a4a3c" stroke-width="1.5"/>
+
+    <!-- Subtle Grid / Mesh Scanlines -->
+    <path d="M 0 50 L 550 50 M 0 100 L 550 100 M 0 150 L 550 150 M 0 200 L 550 200" stroke="#ffffff" stroke-opacity="0.04" stroke-width="1"/>
+    
+    <!-- Face Contour Mesh & Landmarks (MediaPipe Simulation) -->
+    <g transform="translate(275, 135)" opacity="0.95">
+      <!-- Head silhouette -->
+      <ellipse cx="0" cy="0" rx="68" ry="86" fill="#254234" stroke="#488667" stroke-width="2"/>
+      <!-- Shoulders -->
+      <path d="M -110 135 C -90 60 -50 70 0 70 C 50 70 90 60 110 135 Z" fill="#1b3327"/>
+      <!-- Eyes & Smile -->
+      <circle cx="-24" cy="-12" r="5" fill="#a7d8be"/>
+      <circle cx="24" cy="-12" r="5" fill="#a7d8be"/>
+      <path d="M -22 24 Q 0 46 22 24" fill="none" stroke="#a7d8be" stroke-width="4" stroke-linecap="round"/>
+      <!-- Glowing Landmark Dots -->
+      <circle cx="-42" cy="-40" r="3" fill="#6ee7b7"/>
+      <circle cx="42" cy="-40" r="3" fill="#6ee7b7"/>
+      <circle cx="0" cy="-60" r="3" fill="#6ee7b7"/>
+      <circle cx="0" cy="5" r="3" fill="#6ee7b7"/>
+      <circle cx="-50" cy="15" r="3" fill="#6ee7b7"/>
+      <circle cx="50" cy="15" r="3" fill="#6ee7b7"/>
+      <circle cx="0" cy="62" r="3" fill="#6ee7b7"/>
+      <!-- Bounding Box -->
+      <rect x="-84" y="-95" width="168" height="185" rx="8" fill="none" stroke="#34d399" stroke-width="1.5" stroke-dasharray="6,4" opacity="0.7"/>
+    </g>
+
+    <!-- Camera Telemetry Badge -->
+    <rect x="18" y="16" width="170" height="26" rx="6" fill="#0c1813" fill-opacity="0.85"/>
+    <circle cx="30" cy="29" r="4" fill="#10b981"/>
+    <text x="42" y="33" fill="#e2f7ed" font-family="monospace" font-size="11">FACE: TRACKED 98%</text>
+
+    <!-- Floating Emotion Pill -->
+    <rect id="face-badge" x="359" y="16" width="174" height="30" rx="15" fill="#153628" fill-opacity="0.9" stroke="#34d399" stroke-opacity="0.4"/>
+    <text data-frame="face-badge" x="374" y="36" fill="#fef08a" font-family="sans-serif" font-size="14">😊</text>
+    <text data-frame="face-badge" x="397" y="36" fill="#ecfdf5" font-family="sans-serif" font-size="12" font-weight="600">Vui · Độ tin cậy 94%</text>
+  </g>
+
+  <!-- Side Emotion & Rhythm Card -->
+  <g transform="translate(606, 102)" filter="url(#cardShadow)">
+    <rect width="318" height="270" rx="18" fill="#f4f8f2"/>
+    <rect x="1" y="1" width="316" height="268" rx="17" fill="none" stroke="#d5e4cf" stroke-width="1.5"/>
+
+    <text x="24" y="38" fill="#587063" font-family="sans-serif" font-size="12" font-weight="700" letter-spacing="1.2">GỢI Ý SẮC THÁI CÂU VỪA NÓI</text>
+    
+    <rect id="observation-card" x="24" y="56" width="270" height="96" rx="14" fill="#ffffff" stroke="#e0ebd9"/>
+    <text x="44" y="112" fill="#7a5700" font-family="sans-serif" font-size="44">😊</text>
+    <text x="106" y="96" fill="#7a5700" font-family="sans-serif" font-size="24" font-weight="700">Vui vẻ</text>
+    <text data-frame="observation-card" x="106" y="116" fill="#5c6e64" font-family="sans-serif" font-size="13"><tspan x="106">Quan sát: Nụ cười mở,</tspan><tspan x="106" dy="19">mắt sáng</tspan></text>
+
+    <!-- Haptic Waveform Indicator -->
+    <rect x="24" y="166" width="270" height="74" rx="12" fill="#eaf3e7"/>
+    <text x="40" y="192" fill="#1b543e" font-family="sans-serif" font-size="13" font-weight="700">Mô hình nhịp rung xúc giác</text>
+    <rect x="40" y="206" width="70" height="14" rx="4" fill="#176d57"/>
+    <text x="48" y="217" fill="#ffffff" font-family="monospace" font-size="10" font-weight="700">240ms</text>
+    <text x="122" y="217" fill="#4d6b5b" font-family="sans-serif" font-size="12">1 nhịp dài êm dịu</text>
+  </g>
+
+  <!-- Subtitle Streamer Bar (Lower section) -->
+  <g transform="translate(36, 392)">
+    <rect width="888" height="116" rx="18" fill="#ffffff" stroke="#dce5d8" stroke-width="1.5"/>
+    
+    <!-- Audio Waveform Visualizer -->
+    <g transform="translate(28, 28)">
+      <rect x="0" y="12" width="4" height="24" rx="2" fill="#10b981"/>
+      <rect x="8" y="4" width="4" height="40" rx="2" fill="#059669"/>
+      <rect x="16" y="16" width="4" height="16" rx="2" fill="#10b981"/>
+      <rect x="24" y="2" width="4" height="44" rx="2" fill="#047857"/>
+      <rect x="32" y="10" width="4" height="28" rx="2" fill="#10b981"/>
+      <rect x="40" y="18" width="4" height="12" rx="2" fill="#059669"/>
+      <rect x="48" y="6" width="4" height="36" rx="2" fill="#047857"/>
+    </g>
+
+    <!-- Live Subtitle Typography -->
+    <text x="96" y="52" fill="#7a5700" font-family="-apple-system, BlinkMacSystemFont, 'Be Vietnam Pro', sans-serif" font-size="27" font-weight="600">“Rất vui được gặp bạn trong buổi trò chuyện hôm nay.”</text>
+    <text x="96" y="84" fill="#586e63" font-family="sans-serif" font-size="14.5">Phụ đề tiếng Việt thời gian thực · PhoWhisper Tiny xử lý cục bộ 100% · Không qua đám mây</text>
+  </g>
+</svg>

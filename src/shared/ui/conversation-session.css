@@ -1,0 +1,463 @@
+/* A signing stage must never live inside the bounded caption scroller. */
+.conversation-workspace {
+  container: conversation-space / inline-size;
+}
+.conversation-workspace .conversation-layout {
+  grid-template-columns: minmax(0, 3fr) minmax(360px, 2fr);
+  align-items: start;
+  gap: 24px;
+}
+.conversation-workspace .conversation-main {
+  display: flex;
+  flex-direction: column;
+  height: auto;
+  min-height: 0;
+  gap: 20px;
+}
+.conversation-workspace .conversation-capture {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-content: start;
+  min-width: 0;
+  gap: 10px 16px;
+  overflow: visible;
+  max-height: none;
+}
+.conversation-workspace .conversation-capture > * {
+  grid-column: 2;
+  margin: 0;
+  min-width: 0;
+}
+.conversation-workspace .conversation-capture > .conversation-video {
+  grid-column: 1;
+  grid-row: 1 / span 3;
+  height: 240px;
+  min-height: 200px;
+  max-height: none;
+}
+.conversation-workspace .video-empty {
+  padding: 16px;
+  text-align: center;
+}
+.conversation-workspace .conversation-capture > .conversation-save,
+.conversation-workspace .conversation-capture > .recent-activity,
+.conversation-workspace .conversation-capture > .model-readiness,
+.conversation-workspace .conversation-capture > .error-box {
+  grid-column: 1 / -1;
+}
+.conversation-workspace .conversation-controls {
+  align-content: start;
+  margin: 0;
+  gap: 8px;
+}
+.conversation-workspace .conversation-audio-group {
+  margin: 0;
+  height: auto;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.conversation-workspace .session-start-btn,
+.conversation-workspace .conversation-audio-group .button {
+  min-height: 44px;
+  height: auto;
+}
+.conversation-capture .model-readiness {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  align-items: center;
+}
+.conversation-workspace .caption-panel {
+  padding: 24px;
+  min-width: 0;
+}
+.conversation-workspace .caption-scroll {
+  flex: none;
+  height: clamp(300px, 45dvh, 620px);
+  min-height: 300px;
+  max-height: 620px;
+  overflow-y: auto;
+}
+.conversation-workspace .conversation-aside {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  margin-top: 0;
+  gap: 20px;
+  min-width: 0;
+}
+.conversation-aside > .face-feedback,
+.conversation-aside > .sign-panel {
+  padding: 24px;
+  min-width: 0;
+}
+.conversation-aside h2 {
+  font-size: 20px;
+  line-height: 1.4;
+  margin: 0 0 16px;
+}
+.face-feedback .face-illustration {
+  margin: 0;
+  border: none;
+  padding: 0;
+}
+.face-feedback .face-illustration-stage {
+  display: flex;
+  padding: 12px;
+  gap: 14px;
+  margin-block: 0 8px;
+}
+.face-feedback .emotion-color-legend {
+  margin-top: 0;
+}
+.haptic-compact .rhythm-track:empty {
+  display: none;
+}
+.face-feedback .face-illustration-3d {
+  flex: 0 0 120px;
+}
+.face-feedback .face-illustration-3d {
+  width: 120px;
+  height: 120px;
+}
+.face-feedback .face-illustration-3d canvas {
+  width: 120px !important;
+  height: 120px !important;
+}
+.face-feedback .expression-motion {
+  gap: 14px;
+}
+.face-feedback .expression-motion-face {
+  width: 110px;
+  height: 110px;
+}
+.face-feedback .sign-cue-note {
+  display: none;
+}
+.haptic-display.haptic-compact {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px 12px;
+  margin: 12px 0 0;
+}
+.haptic-compact .pulse-orb {
+  width: 28px;
+  height: 28px;
+  font-size: 18px;
+  flex: 0 0 28px;
+}
+.haptic-compact .rhythm-track {
+  width: 90px;
+  height: 8px;
+}
+.haptic-compact small {
+  font-size: 14px;
+  text-align: left;
+}
+.sign-panel h2 {
+  margin-bottom: 12px;
+}
+.sign-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  width: 100%;
+  height: 300px;
+  min-height: 300px;
+  padding: 24px;
+  background: #eef2eb;
+  color: #344d40;
+  border-radius: 12px;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+.sign-empty p {
+  color: inherit;
+  font-size: 20px;
+  margin: 0 0 12px;
+}
+.sign-empty small {
+  color: inherit;
+  line-height: 1.6;
+}
+.sign-panel .quick-phrase-picker {
+  margin: 16px 0 0;
+  border: 0;
+  box-shadow: none;
+}
+.quick-phrase-toggle {
+  min-height: 44px;
+  padding: 10px 0;
+  text-align: left;
+}
+.quick-phrase-tabs {
+  flex-wrap: wrap;
+}
+.quick-phrase-chip {
+  min-height: 44px;
+  border-radius: 10px;
+  text-align: left;
+  flex-wrap: wrap;
+}
+.quick-phrase-chip small {
+  color: #586c5d;
+  font-size: 12px;
+}
+.quick-phrase-tab {
+  min-height: 44px;
+}
+.sign-phrase-card {
+  padding: 0;
+  margin: 0;
+  border: none;
+  box-shadow: none;
+  animation: none;
+  min-width: 0;
+}
+.sign-phrase-header {
+  align-items: center;
+  margin: 0 0 12px;
+  gap: 12px;
+}
+.sign-phrase-header p {
+  margin: 0;
+  color: #24322c;
+  font-size: 18px;
+  overflow-wrap: anywhere;
+}
+.sign-phrase-header .icon-button {
+  flex-shrink: 0;
+  min-width: 44px;
+  min-height: 44px;
+  display: grid;
+  place-items: center;
+}
+.sign-phrase-stage {
+  display: grid;
+  place-items: center;
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  height: clamp(280px, 28vw, 440px);
+  min-height: 280px;
+  overflow: hidden;
+  background: #172820;
+  color: #fff;
+  margin: 0;
+}
+.sign-phrase-stage > p {
+  color: inherit;
+  padding: 24px;
+  text-align: center;
+}
+.sign-motion-host {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.sign-motion-host canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.sign-phrase-stage .sign-phrase-video {
+  width: 100%;
+  height: 100%;
+  max-height: none;
+  position: absolute;
+  inset: 0;
+  object-fit: contain;
+}
+.sign-player-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0;
+}
+.sign-player-controls > button {
+  min-height: 44px;
+  flex: 1 1 auto;
+  padding: 8px 10px;
+  font-size: 14px;
+}
+.sign-phrase-card > small {
+  display: block;
+  color: #586c5d;
+  font-size: 14px;
+}
+.sign-source {
+  margin-top: 12px;
+  overflow-wrap: anywhere;
+}
+.sign-source summary {
+  cursor: pointer;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+}
+.sign-source p {
+  font-size: 14px;
+}
+.sign-phrase-expanded {
+  position: fixed;
+  inset: 0;
+  z-index: 150;
+  background: #f7f6f1;
+  padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right))
+    max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  overflow-y: auto;
+  border-radius: 0;
+}
+.sign-phrase-expanded .sign-phrase-stage {
+  flex: 1;
+  min-height: 180px;
+  aspect-ratio: auto;
+  height: auto;
+  max-height: none;
+}
+.sign-phrase-expanded .sign-source {
+  display: none;
+}
+.conversation-save {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 12px;
+  padding: 8px 12px;
+  border: 1px solid #dde3da;
+  border-radius: 12px;
+  background: #fff;
+}
+.conversation-save .checkbox-label {
+  min-height: 44px;
+  margin: 0;
+  align-items: center;
+}
+.conversation-save .checkbox-label input {
+  margin: 0;
+}
+.save-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  margin: 0;
+  color: #426854;
+}
+.save-locked,
+.save-error {
+  color: #7a5700;
+}
+.conversation-save form {
+  margin-top: 12px;
+  flex-basis: 100%;
+}
+.conversation-save small {
+  display: block;
+  font-size: 13px;
+  line-height: 1.6;
+  margin-top: 8px;
+}
+.save-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+.save-actions > button {
+  min-height: 44px;
+}
+.conversation-save input[type='password'] {
+  width: 100%;
+  min-width: 0;
+}
+.conversation-save .text-button {
+  min-height: 44px;
+  text-align: left;
+}
+.conversation-aside .cue-panel {
+  padding: 12px 20px;
+}
+.conversation-aside .cue-panel > details > summary {
+  min-height: 44px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+.conversation-aside .cue-panel h2 {
+  margin-top: 12px;
+}
+@media (max-width: 1199px) {
+  .conversation-workspace .conversation-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .conversation-workspace .conversation-aside {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .sign-empty {
+    min-height: 260px;
+    max-height: 440px;
+    aspect-ratio: auto;
+  }
+  .sign-phrase-stage {
+    min-height: 260px;
+    max-height: 540px;
+  }
+}
+@container conversation-space (max-width: 900px) {
+  .conversation-layout {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+}
+@media (max-width: 767px), (orientation: landscape) and (max-height: 520px) {
+  .conversation-workspace .conversation-capture {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .conversation-workspace .conversation-capture > *,
+  .conversation-workspace .conversation-capture > .conversation-video {
+    grid-column: 1;
+    grid-row: auto;
+  }
+  .conversation-workspace .conversation-capture > .conversation-video {
+    height: 180px;
+    min-height: 150px;
+  }
+  .conversation-workspace .caption-panel,
+  .conversation-aside > .face-feedback,
+  .conversation-aside > .sign-panel {
+    padding: 16px;
+  }
+  .conversation-workspace .caption-scroll {
+    min-height: 280px;
+    height: 45dvh;
+  }
+  .face-feedback .face-illustration-stage {
+    grid-template-columns: 100px minmax(0, 1fr);
+    gap: 10px;
+    padding: 10px;
+  }
+  .face-feedback .face-illustration-3d,
+  .face-feedback .face-illustration-3d canvas {
+    width: 100px !important;
+    height: 100px !important;
+  }
+  .face-feedback .expression-motion-face {
+    width: 90px;
+    height: 90px;
+  }
+  .sign-empty,
+  .sign-phrase-stage {
+    min-height: 240px;
+  }
+  .sign-phrase-expanded .sign-phrase-stage {
+    min-height: 120px;
+    max-height: none;
+  }
+}

@@ -1,0 +1,24 @@
+services:
+  web:
+    image: signemo:resource-20261017-${SIGNEMO_RUNTIME:-official}
+    build:
+      context: .
+      args:
+        VITE_AI_PROFILE: pc-candidate
+        VITE_STREAMING_ASR: moonshine
+        VITE_MOONSHINE_RUNTIME: ${SIGNEMO_RUNTIME:-official}
+        VITE_TEXT_WASM_THREADS: '1'
+        VITE_BUILD_ID: resource-20261017-${SIGNEMO_RUNTIME:-official}
+    ports: ['127.0.0.1:8094:8080']
+    read_only: true
+    tmpfs: ['/tmp:rw,noexec,nosuid,size=16m,uid=101,gid=101,mode=1777']
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    volumes:
+      - ./output/research-assets/emotieff-b0:/usr/share/nginx/html/research/emotieff-b0:ro
+      - ./output/research-assets/runtime-ort-gpu:/usr/share/nginx/html/research/runtime-ort-gpu:ro
+      - ./output/research-assets/benchmark:/usr/share/nginx/html/research/benchmark:ro
+      - ./output/research-assets/evaluation:/usr/share/nginx/html/research/evaluation:ro
+      - ./output/research-assets/emotion2vec-tone:/usr/share/nginx/html/research/emotion2vec-tone:ro
+      - ./output/research-assets/moonshine-built/single:/usr/share/nginx/html/runtime/moonshine/single:ro
+      - ./output/research-assets/moonshine-built/two:/usr/share/nginx/html/runtime/moonshine/two:ro

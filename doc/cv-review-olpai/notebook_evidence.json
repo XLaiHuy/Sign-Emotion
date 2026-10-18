@@ -1,0 +1,43 @@
+{
+  "notebook": "D:\\Documents\\OLPAI\\output\\shareable\\De_1_Lay_diem_chac\\1-task-cv.ipynb",
+  "sha256": "49225092acfe73b346bd0a6821912e474274ba5689a0283e33830b42e919a8e9",
+  "cell_numbering": "zero-based notebook JSON index",
+  "outputs": {
+    "4": [
+      "Shape (26399, 3)\nDtype sample_id    object\nimage        object\nlabel         int64\ndtype: object\n"
+    ],
+    "5": [
+      "Uniqe Sample id:  26399\nMissing values: sample_id    0\nimage        0\nlabel        0\ndtype: int64\nLabels: \nlabel\n2     1530\n1     1500\n13    1500\n12    1470\n38    1440\n10    1380\n4     1350\n5     1290\n25    1050\n9     1020\n7      990\n8      960\n3      960\n11     870\n35     840\n18     840\n17     750\n31     510\n14     510\n15     450\n33     449\n26     420\n28     360\n23     330\n30     270\n16     240\n22     240\n36     240\n6      240\n34     240\n40     210\n20     210\n21     210\n39     210\n29     180\n24     180\n42     150\n41     150\n32     150\n27     150\n0      120\n19     120\n37     120\nName: count, dtype: int64\n"
+    ],
+    "13": [
+      "Train shape:  (26399, 3)\nValidation shape:  (4380, 3)\nTrain columns:  ['sample_id', 'image', 'label']\nVal columns:  ['sample_id', 'image', 'label']\nData ok\n"
+    ],
+    "14": [
+      "Device:  cuda\nImage size: 48\nBatch size:  128\n"
+    ],
+    "16": [
+      "Mean:  [0.34077752352640917, 0.3118820980050555, 0.32051991773149097]\nStd:  [0.27306308514013866, 0.2618881407393037, 0.2678860322299751]\n"
+    ],
+    "25": [
+      "Input: torch.Size([128, 3, 48, 48])\nOutput: torch.Size([128, 43])\nParameters: 1237451\n"
+    ],
+    "27": [
+      "Loading images:   0%|          | 0/16 [00:00<?, ?it/s]",
+      "Initial loss: 3.802961826324463\nFinal loss: 0.0002987523330375552\n",
+      "<Figure size 640x480 with 1 Axes>"
+    ],
+    "32": [
+      "A_ce48 | Epoch 1/30 | Train Loss: 2.1825 | Train Acc: 0.3912 | Val F1: 0.2533\n>>> Saved best checkpoint!\nA_ce48 | Epoch 2/30 | Train Loss: 0.5474 | Train Acc: 0.8598 | Val F1: 0.7604\n>>> Saved best checkpoint!\nA_ce48 | Epoch 3/30 | Train Loss: 0.0808 | Train Acc: 0.9866 | Val F1: 0.8887\n>>> Saved best checkpoint!\nA_ce48 | Epoch 4/30 | Train Loss: 0.0307 | Train Acc: 0.9954 | Val F1: 0.9305\n>>> Saved best checkpoint!\nA_ce48 | Epoch 5/30 | Train Loss: 0.0191 | Train Acc: 0.9966 | Val F1: 0.9171\nA_ce48 | Epoch 6/30 | Train Loss: 0.0233 | Train Acc: 0.9957 | Val F1: 0.9549\n>>> Saved best checkpoint!\nA_ce48 | Epoch 7/30 | Train Loss: 0.0089 | Train Acc: 0.9986 | Val F1: 0.9581\n>>> Saved best checkpoint!\nA_ce48 | Epoch 8/30 | Train Loss: 0.0114 | Train Acc: 0.9975 | Val F1: 0.9480\nA_ce48 | Epoch 9/30 | Train Loss: 0.0073 | Train Acc: 0.9988 | Val F1: 0.9531\nA_ce48 | Epoch 10/30 | Train Loss: 0.0117 | Train Acc: 0.9977 | Val F1: 0.9348\nA_ce48 | Epoch 11/30 | Train Loss: 0.0088 | Train Acc: 0.9980 | Val F1: 0.9626\n>>> Saved best checkpoint!\nA_ce48 | Epoch 12/30 | Train Loss: 0.0022 | Train Acc: 0.9997 | Val F1: 0.9681\n>>> Saved best checkpoint!\nA_ce48 | Epoch 13/30 | Train Loss: 0.0010 | Train Acc: 0.9999 | Val F1: 0.9720\n>>> Saved best checkpoint!\nA_ce48 | Epoch 14/30 | Train Loss: 0.0005 | Train Acc: 1.0000 | Val F1: 0.9694\nA_ce48 | Epoch 15/30 | Train Loss: 0.0015 | Train Acc: 0.9997 | Val F1: 0.9198\nA_ce48 | Epoch 16/30 | Train Loss: 0.0061 | Train Acc: 0.9984 | Val F1: 0.9532\nA_ce48 | Epoch 17/30 | Train Loss: 0.0021 | Train Acc: 0.9996 | Val F1: 0.9648\nA_ce48 | Epoch 18/30 | Train Loss: 0.0015 | Train Acc: 0.9996 | Val F1: 0.9627\nA_ce48 | Epoch 19/30 | Train Loss: 0.0020 | Train Acc: 0.9996 | Val F1: 0.9636\nA_ce48 | Epoch 20/30 | Train Loss: 0.0010 | Train Acc: 0.9998 | Val F1: 0.9602\nA_ce48 | Epoch 21/30 | Train Loss: 0.0005 | Train Acc: 1.0000 | Val F1: 0.9705\nA_ce48 | Epoch 22/30 | Train Loss: 0.0003 | Train Acc: 1.0000 | Val F1: 0.9713\nA_ce48 | Epoch 23/30 | Train Loss: 0.0003 | Train Acc: 1.0000 | Val F1: 0.9697\nA_ce48 | Epoch 24/30 | Train Loss: 0.0003 | Train Acc: 1.0000 | Val F1: 0.9742\n>>> Saved best checkpoint!\nA_ce48 | Epoch 25/30 | Train Loss: 0.0002 | Train Acc: 1.0000 | Val F1: 0.9758\n>>> Saved best checkpoint!\nA_ce48 | Epoch 26/30 | Train Loss: 0.0002 | Train Acc: 1.0000 | Val F1: 0.9754\nA_ce48 | Epoch 27/30 | Train Loss: 0.0002 | Train Acc: 1.0000 | Val F1: 0.9747\nA_ce48 | Epoch 28/30 | Train Loss: 0.0002 | Train Acc: 1.0000 | Val F1: 0.9743\nA_ce48 | Epoch 29/30 | Train Loss: 0.0002 | Train Acc: 1.0000 | Val F1: 0.9748\nA_ce48 | Epoch 30/30 | Train Loss: 0.0001 | Train Acc: 1.0000 | Val F1: 0.9726\nB_weighted48 | Epoch 1/30 | Train Loss: 2.4845 | Train Acc: 0.3336 | Val F1: 0.2581\n>>> Saved best checkpoint!\nB_weighted48 | Epoch 2/30 | Train Loss: 0.8574 | Train Acc: 0.7856 | Val F1: 0.7054\n>>> Saved best checkpoint!\nB_weighted48 | Epoch 3/30 | Train Loss: 0.1050 | Train Acc: 0.9820 | Val F1: 0.9025\n>>> Saved best checkpoint!\nB_weighted48 | Epoch 4/30 | Train Loss: 0.0421 | Train Acc: 0.9924 | Val F1: 0.9159\n>>> Saved best checkpoint!\nB_weighted48 | Epoch 5/30 | Train Loss: 0.0177 | Train Acc: 0.9970 | Val F1: 0.9091\nB_weighted48 | Epoch 6/30 | Train Loss: 0.0196 | Train Acc: 0.9968 | Val F1: 0.7899\nB_weighted48 | Epoch 7/30 | Train Loss: 0.0171 | Train Acc: 0.9968 | Val F1: 0.9358\n>>> Saved best checkpoint!\nB_weighted48 | Epoch 8/30 | Train Loss: 0.0117 | Train Acc: 0.9975 | Val F1: 0.9555\n>>> Saved best checkpoint!\nB_weighted48 | Epoch 9/30 | Train Loss: 0.0037 | Train Acc: 0.9994 | Val F1: 0.9435\nB_weighted48 | Epoch 10/30 | Train Loss: 0.0122 | Train Acc: 0.9975 | Val F1: 0.9635\n>>> Saved best checkpoint!\nB_weighted48 | Epoch 11/30 | Train Loss: 0.0024 | Train Acc: 0.9998 | Val F1: 0.9686\n>>> Saved best checkpoint!\nB_weighted48 | Epoch 12/30 | Train Loss: 0.0117 | Train Acc: 0.9977 | Val F1: 0.9620\nB_weighted48 | Epoch 13/30 | Train Loss: 0.0072 | Train Acc: 0.9987 | Val F1: 0.9704\n>>> Saved best checkpoint!\nB_weighted48 | Epoch 14/30 | Train Loss: 0.0010 | Train Acc: 0.9999 | Val F1: 0.9671\nB_weighted48 | Epoch 15/30 | Train Loss: 0.0034 | Train Acc: 0.9991 | Val F1: 0.9738\n>>> Saved best checkpoint!\nB_weighted48 | Epoch 16/30 | Train Loss: 0.0018 | Train Acc: 0.9995 | Val F1: 0.9752\n>>> Saved best checkpoint!\nB_weighted48 | Epoch 17/30 | Train Loss: 0.0009 | Train Acc: 0.9999 | Val F1: 0.9724\nB_weighted48 | Epoch 18/30 | Train Loss: 0.0006 | Train Acc: 0.9999 | Val F1: 0.9721\nB_weighted48 | Epoch 19/30 | Train Loss: 0.0010 | Train Acc: 0.9998 | Val F1: 0.9667\nB_weighted48 | Epoch 20/30 | Train Loss: 0.0004 | Train Acc: 1.0000 | Val F1: 0.9694\nB_weighted48 | Epoch 21/30 | Train Loss: 0.0002 | Train Acc: 1.0000 | Val F1: 0.9713\nB_weighted48 | Epoch 22/30 | Train Loss: 0.0002 | Train Acc: 1.0000 | Val F1: 0.9723\nB_weighted48 | Epoch 23/30 | Train Loss: 0.0002 | Train Acc: 1.0000 | Val F1: 0.9728\nB_weighted48 | Epoch 24/30 | Train Loss: 0.0002 | Train Acc: 1.0000 | Val F1: 0.9736\nB_weighted48 | Epoch 25/30 | Train Loss: 0.0002 | Train Acc: 1.0000 | Val F1: 0.9737\nB_weighted48 | Epoch 26/30 | Train Loss: 0.0002 | Train Acc: 1.0000 | Val F1: 0.9755\n>>> Saved best checkpoint!\nB_weighted48 | Epoch 27/30 | Train Loss: 0.0002 | Train Acc: 1.0000 | Val F1: 0.9740\nB_weighted48 | Epoch 28/30 | Train Loss: 0.0002 | Train Acc: 1.0000 | Val F1: 0.9725\nB_weighted48 | Epoch 29/30 | Train Loss: 0.0001 | Train Acc: 1.0000 | Val F1: 0.9740\nB_weighted48 | Epoch 30/30 | Train Loss: 0.0001 | Train Acc: 1.0000 | Val F1: 0.9733\n     experiment  macro_f1  best_epoch  image_size\n0        A_ce48  0.975795          25          48\n1  B_weighted48  0.975492          26          48\nBest model: A_ce48\nBest F1: 0.9757947188715459\n"
+    ],
+    "33": [
+      "Selected: A_ce48\n"
+    ],
+    "34": [
+      "Loaded checkpoint: /kaggle/working/cv_guide/A_ce48_best.pt\nBest epoch: 25\nBest F1: 0.9757947188715459\nImage size: 48\n"
+    ],
+    "35": [
+      "Restored metrics: {'macro_f1': 0.9757947188715459, 'accuracy': 0.9842465753424657, 'loss': 0.07022856756466436}\n    precision    recall  f1-score  support\n16   1.000000  0.516667  0.681319     60.0\n34   1.000000  0.683333  0.811881     60.0\n36   0.821918  1.000000  0.902256     60.0\n41   0.857143  1.000000  0.923077     30.0\n30   1.000000  0.866667  0.928571     60.0\n40   0.909091  1.000000  0.952381     60.0\n38   0.917031  1.000000  0.956720    210.0\n7    1.000000  0.933333  0.965517    150.0\n32   0.937500  1.000000  0.967742     30.0\n24   1.000000  0.966667  0.983051     30.0\n",
+      "<Figure size 1000x800 with 2 Axes>"
+    ]
+  }
+}

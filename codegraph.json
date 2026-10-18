@@ -1,0 +1,16 @@
+{
+  "exclude": [
+    "node_modules/",
+    "dist/",
+    "output/",
+    ".venv/",
+    "public/models/",
+    "public/runtime/",
+    "research-data/",
+    "datasets/",
+    "**/__pycache__/**",
+    ".env",
+    ".env.*",
+    "!.env.example"
+  ]
+}
