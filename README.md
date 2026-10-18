@@ -1,3 +1,14 @@
+---
+title: SignEmo - Trợ Lý Giao Tiếp Đa Phương Thức
+emoji: 🤟
+colorFrom: indigo
+colorTo: purple
+sdk: docker
+app_port: 8080
+pinned: false
+license: mit
+---
+
 # SignEmo — AI-Powered On-Device Accessible Communication
 
 <p align="center">
