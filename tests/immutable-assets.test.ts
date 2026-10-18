@@ -84,6 +84,24 @@ it.each([404, 200])(
   },
 );
 
+it('falls back to remote CDN source when local host has no model file (e.g. Vercel deployment)', async () => {
+  const assetWithCdn = {
+    ...asset,
+    source: 'https://huggingface.co/models/model.onnx',
+  };
+  const fetcher = vi
+    .fn()
+    .mockResolvedValueOnce(new Response('', { status: 404 }))
+    .mockResolvedValueOnce(new Response('', { status: 404 }))
+    .mockResolvedValueOnce(new Response(Uint8Array.of(1, 2, 3, 4)));
+  vi.stubGlobal('fetch', fetcher);
+  expect(await downloadCandidate(assetWithCdn, () => {})).toEqual(Uint8Array.of(1, 2, 3, 4));
+  expect(fetcher).toHaveBeenCalledTimes(3);
+  expect(fetcher.mock.calls[0][0]).toBe(addressed);
+  expect(fetcher.mock.calls[1][0]).toBe(asset.url);
+  expect(fetcher.mock.calls[2][0]).toBe(assetWithCdn.source);
+});
+
 it('bounds an unsupported-address probe plus network retries to four requests', async () => {
   const fetcher = vi
     .fn()

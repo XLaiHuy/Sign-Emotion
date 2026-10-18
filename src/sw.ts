@@ -105,13 +105,60 @@ registerRoute(
     }
   },
 );
+async function fetchWithFallback(
+  request: Request,
+  cacheName: string,
+  manifestUrl: string,
+  modifyResponse?: (r: Response) => Response,
+) {
+  const cache = await caches.open(cacheName);
+  const cached = await cache.match(request);
+  if (cached) return modifyResponse ? modifyResponse(cached) : cached;
+
+  try {
+    const direct = await fetch(request);
+    if (direct.ok && !direct.headers.get('content-type')?.includes('text/html')) {
+      await cache.put(request, direct.clone()).catch(() => undefined);
+      return modifyResponse ? modifyResponse(direct) : direct;
+    }
+  } catch {}
+
+  // If local host doesn't have the file (e.g. Vercel deployment), look up original source CDN in manifest
+  try {
+    const manifestResp = (await cache.match(manifestUrl)) ?? (await fetch(manifestUrl));
+    if (manifestResp?.ok) {
+      const manifest = await manifestResp.clone().json();
+      const assets: Array<{ url: string; source?: string }> = manifest.packs
+        ? manifest.packs.flatMap(
+            (p: { assets?: Array<{ url: string; source?: string }> }) => p.assets ?? [],
+          )
+        : manifest.assets ?? [];
+      const pathname = new URL(request.url).pathname;
+      const match = assets.find((a) => a.url === pathname);
+      if (match?.source && /^https?:\/\//.test(match.source)) {
+        const cdnResp = await fetch(match.source);
+        if (cdnResp.ok) {
+          await cache.put(request, cdnResp.clone()).catch(() => undefined);
+          return modifyResponse ? modifyResponse(cdnResp) : cdnResp;
+        }
+      }
+    }
+  } catch {}
+
+  return fetch(request);
+}
+
 registerRoute(
   ({ request, url }) =>
     request.method === 'GET' &&
     url.origin === self.location.origin &&
     (url.pathname.startsWith('/models/local/') || url.pathname.startsWith('/runtime/speech/')),
   async ({ request }) => {
-    return (await (await caches.open('signemo-conversation-v1')).match(request)) ?? fetch(request);
+    return fetchWithFallback(
+      request,
+      'signemo-conversation-v1',
+      '/models/conversation-manifest.json',
+    );
   },
 );
 registerRoute(
@@ -139,9 +186,12 @@ registerRoute(
     url.origin === self.location.origin &&
     (url.pathname.startsWith('/models/') || url.pathname.startsWith('/runtime/')),
   async ({ request }) => {
-    const cache = await caches.open('signemo-models-v1');
-    const cached = await cache.match(request);
-    return cached ? workerCompatible(cached) : fetch(request);
+    return fetchWithFallback(
+      request,
+      'signemo-models-v1',
+      '/models/manifest.json',
+      workerCompatible,
+    );
   },
 );
 registerRoute(

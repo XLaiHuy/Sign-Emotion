@@ -3,13 +3,14 @@ import { immutableAssetUrl } from './immutableAssetUrl';
 
 /** Bounded retry/resume for immutable model bytes; no partial file is ever cached. */
 export async function downloadCandidate(
-  asset: { url: string; bytes: number; sha256?: string },
+  asset: { url: string; bytes: number; sha256?: string; source?: string },
   progress: (received: number) => void,
   signal?: AbortSignal,
 ) {
   // Vite/dev and older Docker servers keep working via the original URL.
   let transportUrl = import.meta.env.DEV ? asset.url : (immutableAssetUrl(asset) ?? asset.url);
   let mayFallback = transportUrl !== asset.url;
+  let canFallbackToSource = Boolean(asset.source && /^https?:\/\//.test(asset.source));
   const buffer = new Uint8Array(asset.bytes);
   let received = 0;
   let lastProgress = -Infinity;
@@ -32,6 +33,18 @@ export async function downloadCandidate(
         transportUrl = asset.url;
         mayFallback = false;
         // At most one compatibility probe, followed by the same three attempts.
+        attempt--;
+        continue;
+      }
+      if (
+        canFallbackToSource &&
+        !received &&
+        (response.status === 404 ||
+          (response.status === 200 && response.headers.get('Content-Type')?.includes('text/html')))
+      ) {
+        await response.body?.cancel().catch(() => {});
+        transportUrl = asset.source!;
+        canFallbackToSource = false;
         attempt--;
         continue;
       }
