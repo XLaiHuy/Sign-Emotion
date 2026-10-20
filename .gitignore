@@ -59,6 +59,7 @@ public/runtime/
 *.avi
 !public/demo/signemo-16x9.mp4
 !public/demo/signemo-intro-*.mp4
+!public/demo/signemo-preview-*.mp4
 !public/sign-language/*.mp4
 !public/signs/*.mp4
 

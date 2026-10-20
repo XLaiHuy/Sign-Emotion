@@ -31,6 +31,9 @@
   height: 100%;
   border: 0;
 }
+.intro-video-stage video {
+  object-fit: cover;
+}
 .intro-video-stage img {
   object-fit: contain;
 }
@@ -38,6 +41,194 @@
   font-size: clamp(16px, 2vw, 24px);
   color: white;
   background-color: rgb(0 0 0 / 85%);
+}
+
+.intro-preview-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.intro-preview-badge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  pointer-events: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 11px;
+  background: rgba(18, 34, 27, 0.76);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: #e2f9ee;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.intro-preview-toggle-btn {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  pointer-events: auto;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(18, 34, 27, 0.76);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.intro-preview-toggle-btn:hover {
+  background: rgba(23, 109, 87, 0.95);
+  transform: scale(1.08);
+}
+
+.intro-video-play {
+  margin-top: 12px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-weight: 600;
+}
+
+/* Intro Video Modal Dialog */
+.intro-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background: rgba(10, 20, 16, 0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  animation: introModalFadeIn 0.2s ease-out;
+}
+
+@keyframes introModalFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.intro-modal-dialog {
+  background: #ffffff;
+  border: 1px solid rgba(34, 48, 41, 0.12);
+  border-radius: 20px;
+  box-shadow: 0 24px 64px -12px rgba(0, 0, 0, 0.4);
+  width: 100%;
+  max-width: 860px;
+  max-height: 92vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: introModalSlideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes introModalSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.intro-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  border-bottom: 1px solid rgba(34, 48, 41, 0.08);
+  background: #fafbfa;
+}
+
+.intro-modal-title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1a382d;
+}
+
+.intro-modal-close-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: #586861;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.intro-modal-close-btn:hover {
+  background: rgba(0, 0, 0, 0.06);
+  color: #111815;
+}
+
+.intro-modal-body {
+  position: relative;
+  background: #000000;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.intro-modal-iframe-container {
+  position: relative;
+  width: 100%;
+  padding-bottom: 56.25%; /* 16:9 ratio */
+  height: 0;
+}
+
+.intro-modal-iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+.intro-modal-offline {
+  padding: 3rem 1.5rem;
+  text-align: center;
+  color: #e2f9ee;
+}
+
+.intro-modal-offline p {
+  margin: 0 0 8px;
+  font-size: 0.95rem;
+}
+
+.intro-modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  background: #fafbfa;
+  border-top: 1px solid rgba(34, 48, 41, 0.08);
+  gap: 12px;
 }
 .optional-media-actions {
   display: flex;

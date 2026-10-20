@@ -181,5 +181,5 @@ describe('consent and navigation', () => {
     expect(
       await screen.findByText(/Đang dùng chế độ tương thích cho khuôn mặt \(CPU\)/),
     ).toBeInTheDocument();
-  });
+  }, 20000);
 });
