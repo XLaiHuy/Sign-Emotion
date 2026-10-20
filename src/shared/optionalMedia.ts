@@ -23,7 +23,7 @@ export const introYouTube = {
   shortId: '7f1qlS8Y9gQ',
   longUrl: 'https://www.youtube.com/watch?v=E6AGaW7wE7k',
   shortUrl: 'https://www.youtube.com/watch?v=7f1qlS8Y9gQ',
-  embedUrl: 'https://www.youtube-nocookie.com/embed/E6AGaW7wE7k?autoplay=1&rel=0',
+  embedUrl: 'https://www.youtube.com/embed/E6AGaW7wE7k?autoplay=1&rel=0',
 };
 export interface SignVideoAsset extends OptionalMediaAsset {
   expression: Exclude<Expression, 'neutral'>;

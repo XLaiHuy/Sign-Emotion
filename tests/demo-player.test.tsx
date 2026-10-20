@@ -34,7 +34,7 @@ it('plays short preview clip automatically (muted) and opens YouTube iframe only
   fireEvent.click(screen.getByRole('button', { name: /Xem video giới thiệu/i }));
   const iframe = document.querySelector('iframe');
   expect(iframe).not.toBeNull();
-  expect(iframe?.src).toContain('https://www.youtube-nocookie.com/embed/E6AGaW7wE7k');
+  expect(iframe?.src).toContain('https://www.youtube.com/embed/E6AGaW7wE7k');
 
   // Verify external YouTube link
   const ytLinks = screen.getAllByRole('link', { name: /Mở trên YouTube/i });
@@ -45,9 +45,19 @@ it('plays short preview clip automatically (muted) and opens YouTube iframe only
   expect(document.querySelector('iframe')).toBeNull();
 });
 
-it('supports preview toggle and closing modal via Escape key', () => {
-  render(<DemoPlayer />);
-  const toggleBtn = screen.getByRole('button', { name: /clip xem trước/i });
+it('supports preview pause toggle, sound toggle, and closing modal via Escape key', () => {
+  const { container } = render(<DemoPlayer />);
+  const video = container.querySelector('video')!;
+  expect(video.muted).toBe(true);
+
+  // Toggle sound
+  const soundBtn = screen.getByRole('button', { name: /âm thanh clip xem trước/i });
+  expect(soundBtn).toBeInTheDocument();
+  fireEvent.click(soundBtn);
+  expect(video.muted).toBe(false);
+
+  // Toggle pause
+  const toggleBtn = screen.getByRole('button', { name: /tạm dừng clip xem trước/i });
   expect(toggleBtn).toBeInTheDocument();
 
   // Open modal

@@ -21,7 +21,7 @@ it('loads no YouTube iframe before the viewer chooses to view the full video', (
   expect(container.querySelector('video')?.src).toContain('/demo/signemo-preview-');
   fireEvent.click(screen.getByRole('button', { name: /Xem video giới thiệu/i }));
   expect(document.querySelector('iframe')?.src).toContain(
-    'https://www.youtube-nocookie.com/embed/E6AGaW7wE7k',
+    'https://www.youtube.com/embed/E6AGaW7wE7k',
   );
   unmount();
   expect(document.querySelector('iframe')).toBeNull();

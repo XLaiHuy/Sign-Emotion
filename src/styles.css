@@ -70,11 +70,17 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
-.intro-preview-toggle-btn {
+.intro-preview-controls {
   position: absolute;
   bottom: 12px;
   right: 12px;
   pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.intro-preview-toggle-btn {
   width: 32px;
   height: 32px;
   border-radius: 50%;
@@ -122,8 +128,12 @@
 }
 
 @keyframes introModalFadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .intro-modal-dialog {
@@ -208,6 +218,31 @@
   width: 100%;
   height: 100%;
   border: 0;
+}
+
+.intro-modal-help-tip {
+  padding: 8px 16px 10px;
+  background: #0d1a14;
+  color: #9cb8ab;
+  font-size: 0.82rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.intro-modal-help-link {
+  color: #5eead4;
+  text-decoration: underline;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.intro-modal-help-link:hover {
+  color: #a7f3d0;
 }
 
 .intro-modal-offline {

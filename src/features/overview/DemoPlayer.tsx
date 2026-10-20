@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Download, ExternalLink, Pause, Play, Sparkles, X } from 'lucide-react';
+import { Download, ExternalLink, Pause, Play, Sparkles, Volume2, VolumeX, X } from 'lucide-react';
 import { introVideo, introCaptions, introYouTube } from '../../shared/optionalMedia';
 import { optionalMediaSaved, saveOptionalMedia } from '../../infrastructure/offline/optionalMedia';
 
@@ -7,6 +7,7 @@ import { optionalMediaSaved, saveOptionalMedia } from '../../infrastructure/offl
 export function DemoPlayer() {
   const [modalOpen, setModalOpen] = useState(false);
   const [previewPaused, setPreviewPaused] = useState(false);
+  const [muted, setMuted] = useState(true);
   const [failed, setFailed] = useState(false);
   const [offline, setOffline] = useState(!navigator.onLine);
   const [saved, setSaved] = useState(false);
@@ -110,6 +111,13 @@ export function DemoPlayer() {
     }
   };
 
+  const toggleMute = () => {
+    const node = video.current;
+    if (!node) return;
+    node.muted = !node.muted;
+    setMuted(node.muted);
+  };
+
   const save = async () => {
     const request = new AbortController();
     savingRequest.current = request;
@@ -172,19 +180,34 @@ export function DemoPlayer() {
           <span className="intro-preview-badge">
             <Sparkles size={13} aria-hidden="true" /> Clip xem trước
           </span>
-          <button
-            type="button"
-            className="intro-preview-toggle-btn"
-            onClick={togglePreview}
-            aria-label={previewPaused ? 'Phát tiếp clip xem trước' : 'Tạm dừng clip xem trước'}
-            title={previewPaused ? 'Phát' : 'Tạm dừng'}
-          >
-            {previewPaused ? (
-              <Play size={14} aria-hidden="true" />
-            ) : (
-              <Pause size={14} aria-hidden="true" />
-            )}
-          </button>
+          <div className="intro-preview-controls">
+            <button
+              type="button"
+              className="intro-preview-toggle-btn"
+              onClick={toggleMute}
+              aria-label={muted ? 'Bật âm thanh clip xem trước' : 'Tắt âm thanh clip xem trước'}
+              title={muted ? 'Bật âm thanh' : 'Tắt âm thanh'}
+            >
+              {muted ? (
+                <VolumeX size={15} aria-hidden="true" />
+              ) : (
+                <Volume2 size={15} aria-hidden="true" />
+              )}
+            </button>
+            <button
+              type="button"
+              className="intro-preview-toggle-btn"
+              onClick={togglePreview}
+              aria-label={previewPaused ? 'Phát tiếp clip xem trước' : 'Tạm dừng clip xem trước'}
+              title={previewPaused ? 'Phát' : 'Tạm dừng'}
+            >
+              {previewPaused ? (
+                <Play size={14} aria-hidden="true" />
+              ) : (
+                <Pause size={14} aria-hidden="true" />
+              )}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -212,8 +235,8 @@ export function DemoPlayer() {
       </div>
 
       <figcaption>
-        Clip xem trước chạy tự động (tắt tiếng). Bấm nút &quot;Xem video giới thiệu&quot; để mở bản
-        đầy đủ có thuyết minh và phụ đề.{' '}
+        Clip xem trước tự động chạy (bấm icon loa để nghe tiếng). Bấm nút &quot;Xem video giới
+        thiệu&quot; để mở bản đầy đủ có thuyết minh và phụ đề.{' '}
         {offline && !saved
           ? 'Clip chưa lưu offline. Hướng dẫn bằng chữ vẫn có sẵn; hội thoại không bị chặn. '
           : 'Clip minh họa, không phải bằng chứng độ chính xác. '}
@@ -253,15 +276,31 @@ export function DemoPlayer() {
                   </p>
                 </div>
               ) : (
-                <div className="intro-modal-iframe-container">
-                  <iframe
-                    src={introYouTube.embedUrl}
-                    title="Video giới thiệu SignEmo — YouTube"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                    allowFullScreen
-                    className="intro-modal-iframe"
-                  />
-                </div>
+                <>
+                  <div className="intro-modal-iframe-container">
+                    <iframe
+                      src={introYouTube.embedUrl}
+                      title="Video giới thiệu SignEmo — YouTube"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                      allowFullScreen
+                      referrerPolicy="strict-origin-when-cross-origin"
+                      // @ts-expect-error credentialless is supported in modern chromium/edge
+                      credentialless={true}
+                      className="intro-modal-iframe"
+                    />
+                  </div>
+                  <div className="intro-modal-help-tip">
+                    <span>Nếu trình duyệt chặn phát video nhúng:</span>{' '}
+                    <a
+                      href={introYouTube.longUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="intro-modal-help-link"
+                    >
+                      Mở xem trực tiếp trên YouTube <ExternalLink size={13} aria-hidden="true" />
+                    </a>
+                  </div>
+                </>
               )}
             </div>
             <div className="intro-modal-footer">
