@@ -9,7 +9,7 @@ it('renders toggle button and expands 100 phrases on click', () => {
   render(<QuickPhrasePicker onSelectPhrase={handleSelect} />);
 
   const toggleBtn = screen.getByRole('button', {
-    name: /Khám phá câu mẫu/i,
+    name: /Khám phá 100 mẫu câu ký hiệu/i,
   });
   expect(toggleBtn).toBeInTheDocument();
   expect(screen.queryByRole('tablist')).toBeNull();

@@ -4,7 +4,8 @@ import { eligibleSignAsset } from '../../domain/sign/signAsset';
 
 export function usePlayableSigns(enabled: boolean): readonly SignPhraseItem[] {
   return useMemo(
-    () => (enabled ? signPhrases100Catalogue.filter((phrase) => eligibleSignAsset(phrase.asset)) : []),
+    () =>
+      enabled ? signPhrases100Catalogue.filter((phrase) => eligibleSignAsset(phrase.asset)) : [],
     [enabled],
   );
 }

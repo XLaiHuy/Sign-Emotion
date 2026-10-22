@@ -64,33 +64,16 @@ export function findPrototypeSignPhrase(
 ): SignPhraseItem | undefined {
   const key = normalizeSignPhrase(text);
   if (!key) return undefined;
-  // 1. Exact full sentence match
+  // Preserve the whole utterance: a keyword inside a longer/negated sentence
+  // must never select a video that changes its meaning.
   const exact = catalogue.find((item) => normalizeSignPhrase(item.text) === key);
   if (exact) return exact;
 
-  // 2. Exact sign class / keyword match (e.g. "Cảm ơn", "Chào", "Xin lỗi", "Bệnh viện", "Sốt")
+  // A standalone class name can still be looked up explicitly.
   const classMatch = catalogue.find(
     (item) => item.signClass && normalizeSignPhrase(item.signClass) === key,
   );
-  if (classMatch) return classMatch;
-
-  // 3. Sign class keyword present as a distinct word in utterance
-  const keywordMatch = catalogue.find((item) => {
-    if (!item.signClass) return false;
-    const normClass = normalizeSignPhrase(item.signClass);
-    if (!normClass || normClass.length < 2) return false;
-    const regex = new RegExp(`(^|\\s)${normClass}(\\s|$)`, 'u');
-    return regex.test(key);
-  });
-  if (keywordMatch) return keywordMatch;
-
-  // 4. Significant sub-phrase match
-  return catalogue.find((item) => {
-    const normItem = normalizeSignPhrase(item.text);
-    if (key.length >= 6 && normItem.includes(key)) return true;
-    if (normItem.length >= 6 && key.includes(normItem)) return true;
-    return false;
-  });
+  return classMatch;
 }
 
 export function findPlayableSignPhrase(text: string, catalogue = signPhrases100Catalogue) {

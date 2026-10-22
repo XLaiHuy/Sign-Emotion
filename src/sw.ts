@@ -132,7 +132,7 @@ async function fetchWithFallback(
         ? manifest.packs.flatMap(
             (p: { assets?: Array<{ url: string; source?: string }> }) => p.assets ?? [],
           )
-        : manifest.assets ?? [];
+        : (manifest.assets ?? []);
       const pathname = new URL(request.url).pathname;
       const match = assets.find((a) => a.url === pathname);
       if (match?.source && /^https?:\/\//.test(match.source)) {

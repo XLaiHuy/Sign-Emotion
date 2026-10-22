@@ -15,6 +15,7 @@
 !scripts/conversation-assets.lock.json
 !scripts/prepare-moonshine-assets.mjs
 !scripts/moonshine-streaming-vi.lock.json
+!scripts/moonshine-runtime-profiles.lock.json
 !scripts/verify-assets.mjs
 !scripts/prune-candidate-bundle.mjs
 !scripts/product-budget.json

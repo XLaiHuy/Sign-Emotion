@@ -128,6 +128,11 @@ beforeEach(() => {
   vi.stubGlobal('MediaStream', TestStream);
   vi.stubGlobal('AudioContext', TestAudioContext);
   vi.stubGlobal('isSecureContext', true);
+  Object.defineProperty(window, 'isSecureContext', { configurable: true, value: true });
+  vi.stubGlobal('navigator', {
+    mediaDevices: { getUserMedia: vi.fn() },
+    userAgent: 'Windows',
+  });
   vi.spyOn(HTMLMediaElement.prototype, 'play').mockResolvedValue();
   vi.spyOn(HTMLMediaElement.prototype, 'pause').mockImplementation(() => {});
 });

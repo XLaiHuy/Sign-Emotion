@@ -57,8 +57,20 @@ export const QuickPhrasePicker = memo(function QuickPhrasePicker({
 
       {isOpen && (
         <div className="quick-phrase-content">
-          <div className="quick-phrase-search-bar" style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12, position: 'relative' }}>
-            <Search size={16} style={{ position: 'absolute', left: 10, color: 'var(--text-secondary, #666)' }} />
+          <div
+            className="quick-phrase-search-bar"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              marginBottom: 12,
+              position: 'relative',
+            }}
+          >
+            <Search
+              size={16}
+              style={{ position: 'absolute', left: 10, color: 'var(--text-secondary, #666)' }}
+            />
             <input
               type="text"
               value={searchQuery}
@@ -130,7 +142,15 @@ export const QuickPhrasePicker = memo(function QuickPhrasePicker({
 
           <div className="quick-phrase-list" role="list">
             {filtered.length === 0 ? (
-              <p style={{ padding: '16px', textAlign: 'center', color: 'var(--text-secondary, #777)', fontSize: '13px', width: '100%' }}>
+              <p
+                style={{
+                  padding: '16px',
+                  textAlign: 'center',
+                  color: 'var(--text-secondary, #777)',
+                  fontSize: '13px',
+                  width: '100%',
+                }}
+              >
                 Không tìm thấy mẫu câu nào khớp với &quot;{searchQuery}&quot;.
               </p>
             ) : (
@@ -147,13 +167,16 @@ export const QuickPhrasePicker = memo(function QuickPhrasePicker({
                   }
                 >
                   <span className="chip-text">{item.text}</span>
-                  {item.signClass && <small style={{ opacity: 0.7, marginLeft: 4 }}>· {item.signClass}</small>}
+                  {item.signClass && (
+                    <small style={{ opacity: 0.7, marginLeft: 4 }}>· {item.signClass}</small>
+                  )}
                 </button>
               ))
             )}
           </div>
           <small className="quick-phrase-tip">
-            Đã tích hợp đầy đủ 100/100 video cử chỉ ký hiệu người thật từ bộ dữ liệu VSL. Bấm vào câu để xem ngay video minh họa cử chỉ.
+            Đã tích hợp đầy đủ 100/100 video cử chỉ ký hiệu người thật từ bộ dữ liệu VSL. Bấm vào
+            câu để xem ngay video minh họa cử chỉ.
           </small>
         </div>
       )}
