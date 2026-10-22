@@ -112,6 +112,35 @@ it('bounds an unsupported-address probe plus network retries to four requests', 
   expect(fetcher).toHaveBeenCalledTimes(4);
 });
 
+it.each([404, 200])(
+  'reports missing deployment files (%s) without retrying a package source',
+  async (status) => {
+    const fetcher = vi.fn<typeof fetch>(async () =>
+      status === 404
+        ? new Response('', { status })
+        : new Response('<html>app</html>', { headers: { 'Content-Type': 'text/html' } }),
+    );
+    vi.stubGlobal('fetch', fetcher);
+    await expect(
+      downloadCandidate(
+        { ...asset, source: '@mediapipe/tasks-vision@1.1.0/wasm/runtime.js' },
+        vi.fn(),
+      ),
+    ).rejects.toMatchObject({ code: 'missing-assets' });
+    expect(fetcher).toHaveBeenCalledTimes(2);
+    expect(fetcher.mock.calls.map((call) => call[0])).toEqual([addressed, asset.url]);
+  },
+);
+
+it('reports missing files after the CDN fallback also returns 404', async () => {
+  const fetcher = vi.fn(async () => new Response('', { status: 404 }));
+  vi.stubGlobal('fetch', fetcher);
+  await expect(
+    downloadCandidate({ ...asset, source: 'https://example.com/model.onnx' }, vi.fn()),
+  ).rejects.toMatchObject({ code: 'missing-assets' });
+  expect(fetcher).toHaveBeenCalledTimes(3);
+});
+
 it('does not change transport halfway through a partially downloaded version', async () => {
   let started = false;
   const fetcher = vi.fn<typeof fetch>(async () => {

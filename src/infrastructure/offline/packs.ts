@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { selectedSpeechAssets } from '../inference/conversationProfile';
 import { downloadCandidate } from './downloadCandidate';
+import { runAssetQueue } from './runAssetQueue';
 import {
   forgetCachedAsset,
   markCachedAssetVerified,
@@ -128,45 +129,42 @@ export async function preparePack(
   repairAttempt = 0,
 ) {
   const cache = await caches.open(PACK_CACHE);
-  let done = 0;
-  const total = pack.assets.reduce((sum, a) => sum + a.bytes, 0);
-  for (const asset of pack.assets) {
-    signal?.throwIfAborted();
-    let cached = await cache.match(asset.url);
-    if (cached) {
-      try {
-        await verifyCachedAsset(PACK_CACHE, cached.clone(), asset);
-      } catch {
-        cached = undefined;
-        forgetCachedAsset(PACK_CACHE, asset);
-        await cache.delete(asset.url);
-      }
-    }
-    if (!cached) {
-      const data = await downloadCandidate(
-        asset,
-        (received) => progress(done + received, total),
-        signal,
-      );
-      await verifyBytes(data.buffer, asset);
+  await runAssetQueue(
+    pack.assets,
+    async (asset, report, signal) => {
       signal?.throwIfAborted();
-      await cache.put(
-        asset.url,
-        new Response(data.buffer, {
-          headers: {
-            'Content-Type': asset.url.endsWith('.wasm')
-              ? 'application/wasm'
-              : asset.url.endsWith('.mjs')
-                ? 'application/javascript'
-                : 'application/octet-stream',
-          },
-        }),
-      );
-      markCachedAssetVerified(PACK_CACHE, asset);
-    }
-    done += asset.bytes;
-    progress(done, total);
-  }
+      let cached = await cache.match(asset.url);
+      if (cached) {
+        try {
+          await verifyCachedAsset(PACK_CACHE, cached.clone(), asset);
+        } catch {
+          cached = undefined;
+          forgetCachedAsset(PACK_CACHE, asset);
+          await cache.delete(asset.url);
+        }
+      }
+      if (!cached) {
+        const data = await downloadCandidate(asset, report, signal);
+        await verifyBytes(data.buffer, asset);
+        signal?.throwIfAborted();
+        await cache.put(
+          asset.url,
+          new Response(data.buffer, {
+            headers: {
+              'Content-Type': asset.url.endsWith('.wasm')
+                ? 'application/wasm'
+                : asset.url.endsWith('.mjs')
+                  ? 'application/javascript'
+                  : 'application/octet-stream',
+            },
+          }),
+        );
+        markCachedAssetVerified(PACK_CACHE, asset);
+      }
+    },
+    (_asset, done, total) => progress(done, total),
+    signal,
+  );
   signal?.throwIfAborted();
   // A browser can evict earlier CacheStorage entries while a large pack is
   // being written. Reconcile once so progress reaching 100% never means only

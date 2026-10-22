@@ -1,5 +1,9 @@
 # Trạng thái và quyết định SignEmo
 
+## Sửa đóng gói Vercel — 22/10/2026
+
+Tái hiện HTTP 404 model/runtime trên `sign-emotion.vercel.app`: manifest có nhưng build thiếu bước tạo tài nguyên bị Git ignore. `build:vercel` chuẩn bị/checksum trước build và tạo đủ 40 URL checksum; lỗi thiếu file máy chủ có mã riêng. Queue tối đa hai file với budget 48 MiB, model lớn tải riêng; không đổi trọng số hoặc tổng 324 MiB. Production preview đủ cache và reload offline qua. Kiểm tra lại trước push: **303/303 test**, lint/typecheck/checksum/build/format qua; đã sửa các lỗi ký hiệu/phủ định và fixture test được phát hiện. Clean Linux Docker image `signemo:model-download-20261022` healthy, HTTP/runtime 200; không đổi container có sẵn. Chi tiết và giới hạn đo/deploy ở `VERIFICATION.md`, cách triển khai ở `DEPLOYMENT.md`; chưa nghiệm thu phần cứng/Android.
+
 ## Sửa bố cục, ký hiệu và lưu lịch sử — 18/10/2026
 
 Đang kiểm chứng `conversation-sign-history-20261018`: player riêng dưới nét mặt, không chèn câu thử vào transcript, nhớ opt-in lưu và báo trạng thái ghi. 100 câu dự kiến gồm 93 metadata/7 đề xuất, **0 chuyển động đủ điều kiện phát**. Đã gỡ động tác chung và MP4 gán nhầm. Hai keypoint chưa đủ ánh xạ khớp/căn thời gian/video đối chiếu, không tự dựng rồi gọi là VSL chuẩn. Bằng chứng ở `CONVERSATION_SIGN_HISTORY_20261018.md`; public giữ nguyên.

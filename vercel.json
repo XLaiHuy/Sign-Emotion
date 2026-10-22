@@ -1,8 +1,18 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "npm run build",
+  "installCommand": "npm ci --no-audit --no-fund",
+  "installCommand": "npm ci --no-audit --no-fund",
+  "buildCommand": "npm run build:vercel",
   "outputDirectory": "dist",
   "headers": [
+    {
+      "source": "/immutable/(.*)",
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }]
+    },
+    {
+      "source": "/sw.js",
+      "headers": [{ "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }]
+    },
     {
       "source": "/(.*)",
       "headers": [
@@ -23,7 +33,7 @@
   ],
   "rewrites": [
     {
-      "source": "/((?!assets/|models/|signs/|runtime/|avatar/|demo/|favicon\\.ico|icon\\.svg|manifest\\.webmanifest|sw\\.js).*)$",
+      "source": "/((?!immutable/|assets/|models/|signs/|runtime/|avatar/|demo/|favicon\\.ico|icon\\.svg|manifest\\.webmanifest|sw\\.js).*)$",
       "destination": "/index.html"
     }
   ]

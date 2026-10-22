@@ -1,5 +1,28 @@
 # Nhật ký kiểm chứng SignEmo
 
+## Kiểm tra trước push và tối ưu tải — 22/10/2026
+
+- `npm run check` qua: lint/boundaries 127 module, TypeScript, **303 test/86 file**, checksum 13 face +25 conversation và production build. `npm run format:check` qua toàn repo. Log: `output/model-download-check.log`. Đã sửa matcher ký hiệu để giữ nguyên câu/phủ định, cập nhật test tên nút và fixture HTTPS/media; sáu file định dạng cũ chỉ được format.
+- `npm run build:vercel` qua, đóng gói 40 URL `/immutable/<sha256>/...` sau khi xác minh file output; không đưa binary vào Git. HEAD từng URL trên preview đều 200, GET runtime MediaPipe JS đúng SHA. Header immutable chỉ áp URL checksum; URL gốc/CacheStorage không đổi. `sw.js` không cache HTTP dài hạn. Log: `output/model-download-vercel-build.log`.
+- Queue tối đa hai file và tổng kích thước khai báo <=48 MiB; file lớn tải riêng. Test overlap/budget/progress monotonic, lỗi/hủy phải abort và drain sibling, không chạy batch kế tiếp; kiểm thử đóng gói thiếu/hỏng/path ngoài allowlist. Không đổi model/preprocessing/ngưỡng.
+- Chrome/Windows, production preview: 14 entry core +28 entry conversation (40 file +2 manifest), reload offline dưới service worker vẫn đủ tài nguyên, Hội thoại không báo lỗi và không mở thiết bị. Ảnh `output/playwright/model-final-offline.png`, kết quả `model-final-offline.log`. Fault injection bằng Playwright route trả 404 cho immutable runtime không gây lỗi thiếu tài nguyên vì fallback dưới service worker vẫn tải được; không tính lượt timeout chờ thông báo này là bằng chứng kiểm thử UI nhánh 404. Nhánh lỗi được kiểm bằng regression downloader.
+- Docker clean Linux build đã cài dependency bằng `npm ci`, chuẩn bị/checksum tài nguyên và build thành công. Image `signemo:model-download-20261022`, ID `sha256:4567ace3e0570059250f61ce256d1843c886810011cff79881e1eb7f7f042849`; container kiểm riêng cùng tên, read-only/cap-drop/no-new-privileges, healthy. HTTP `/healthz`, `/`, manifest và runtime JS đều 200. Thêm lock runtime vào `.dockerignore` allowlist để đúng các lệnh COPY; không thay container đang có. Log: `output/model-download-docker.log`.
+
+Các lượt đo trả 0 request do kết thúc quá sớm/cache được loại khỏi kết quả. Lượt trên origin mới chỉ được tính khi đã xác minh đủ 40 file và UI kết thúc chuẩn bị; không công bố phần trăm tăng tốc từ các lượt chưa hoàn tất hoặc khác tải hệ thống. Xác nhận cấu trúc: 40 URL checksum trực tiếp đã trả 200, tránh một compatibility probe cho mỗi file; queue overlap được kiểm riêng. Bằng chứng browser/đo mạng lưu tại `output/playwright/model-speed-*.log`.
+
+Chưa nghiệm thu camera/micro vật lý, Android, chất lượng inference hoặc mạng di động. Trạng thái deploy public cần đọc theo commit/check Vercel và HTTP thực tế, không suy ra từ local build.
+
+## Thiếu tài nguyên trên Vercel — 22/10/2026
+
+- HTTP trực tiếp tại `https://sign-emotion.vercel.app/`: trang và hai manifest trả 200; B2, face landmarker, MediaPipe JS/MJS/WASM và ORT WASM kiểm tra trả 404. Lỗi trùng file `vision_wasm_internal.js` trong ảnh người dùng. Build command cũ không chuẩn bị các binary/runtime bị Git ignore.
+- `npm run build:vercel` mới qua toàn bộ prepare/verify/build. Đọc lại output `dist`: 40 file đúng byte count/SHA-256, 339.753.857 byte (324,0145 MiB). Các manifest được tạo lại không có diff.
+- Regression tải immutable/fallback/resume, phân loại lỗi và candidate preparation: 17/17 qua (3 file). Thêm trường hợp runtime có source npm không phải URL, SPA HTML và CDN cuối cùng trả 404; trả `missing-assets` thay vì nhắc người dùng giữ mạng ổn định.
+- `npm run check`: lint/boundaries (126 module) và TypeScript qua; Vitest 289/295 qua, 6 lỗi trong 4 file: `sign-playback`, `sign-phrases-100`, `quick-phrase-picker`, `conversation-start` (2 timeout và 1 assertion môi trường HTTPS/media). Không sửa các phần này trong lượt tải model. Build đã chạy riêng thành công; không ghi full gate đạt.
+- `npm run format:check`: còn 6 file ngoài diff chưa đúng định dạng: `signPhrasesCatalogue.ts`, `QuickPhrasePicker.tsx`, `usePlayableSigns.ts`, `sw.ts`, `vsl-hcm-manifest.json`, `vsl-video-100-manifest.json`.
+- Chrome qua Playwright CLI, Windows, Vite production preview `127.0.0.1:4183`, baseline PhoWhisper/B2: tự tải đủ 40 file vào CacheStorage, service worker điều khiển trang. Sau mô phỏng offline và reload, cả 40 file vẫn có, màn Hội thoại không báo tải dở/lỗi; MediaPipe log `Graph successfully started running`. Ảnh: `output/playwright/model-download-fixed-offline.png`. Hai lỗi resource offline là clip preview và VTT chưa lưu, không phải model; hai cảnh báo MediaPipe về XNNPACK/OpenGL.
+
+Chưa triển khai lại Vercel hoặc thử Docker trong lượt này; không bật đồng ý/camera/micro, không kiểm phần cứng, Android hoặc chất lượng inference trên hội thoại thật. Link public vẫn cần deploy bản sửa theo `DEPLOYMENT.md`.
+
 ## Tăng diện tích màu — 18/10/2026
 
 Docker đã rebuild và xác nhận browser tải đúng palette/rules mới, build ID `avatar-colour-20261018`; production smoke script `output/playwright/avatar-colour-production.js`. Không chạy lại benchmark AI vì không đổi model/renderer/scheduler; số đo avatar trước không được trình bày thành số đo bản màu mới.

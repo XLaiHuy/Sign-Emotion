@@ -48,6 +48,14 @@ export async function downloadCandidate(
         attempt--;
         continue;
       }
+      if (
+        !received &&
+        (response.status === 404 ||
+          (response.status === 200 && response.headers.get('Content-Type')?.includes('text/html')))
+      ) {
+        await response.body?.cancel().catch(() => {});
+        throw new ModelInitializationError('missing-assets');
+      }
       if (!response.ok) throw new TypeError('Model connection failed');
       if (response.status === 206) {
         const range = response.headers.get('Content-Range')?.match(/^bytes (\d+)-(\d+)\/(\d+)$/);

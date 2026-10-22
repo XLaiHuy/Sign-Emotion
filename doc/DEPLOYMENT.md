@@ -1,5 +1,15 @@
 # Triển khai SignEmo
 
+## Vercel: đóng gói model và runtime — 22/10/2026
+
+Kiểm tra `https://sign-emotion.vercel.app/` ngày 22/10: hai manifest trả 200 nhưng model mặt, MediaPipe JS/MJS/WASM và ORT WASM trả 404. `.gitignore` loại model/runtime sinh tự động; lệnh `npm run build` chỉ đóng gói file đã có. Nguồn dự phòng giúp tải một số model nhưng không thay được runtime lấy từ package npm, nên tải dừng ở `vision_wasm_internal.js` khoảng 32,9/324 MiB.
+
+`vercel.json` dùng `npm run build:vercel`: chuẩn bị face/runtime, chuẩn bị conversation, xác minh byte count/SHA-256 rồi build. Sau build, `package-vercel-assets.mjs` xác minh lại từng file trong `dist` và tạo đường dẫn `/immutable/<sha256>/<models|runtime>/...` đúng với downloader, tránh mỗi file phải thử một URL thiếu rồi tải lại đường dẫn thường. Giữ đường dẫn gốc cho worker/CacheStorage. Install command là `npm ci --no-audit --no-fund`, output `dist`. Nếu dashboard có cấu hình build riêng, bảo đảm dùng cùng lệnh. Không commit binary hoặc đưa thư mục nghiên cứu lên hosting. Cấu hình này dành cho profile baseline; không tự chọn `pc-candidate` cần các artifact riêng.
+
+Chỉ URL chứa checksum dùng `Cache-Control: public, max-age=31536000, immutable`, theo [hướng dẫn cache của Vercel](https://vercel.com/docs/caching/cache-control-headers). URL thiếu trong `/immutable/` không được rewrite thành HTML. `sw.js` dùng `no-cache, no-store, must-revalidate`. Downloader xử lý tối đa hai file cùng lúc với tổng kích thước khai báo <=48 MiB; file lớn hơn tải riêng. Thứ tự lõi rồi phụ đề rồi text giữ nguyên, kiểm SHA trước cache và hủy/drain cả batch khi lỗi hoặc người dùng hủy.
+
+Bản sửa cần được đưa vào repository liên kết Vercel và triển khai lại; kiểm thử local không cập nhật link public. Sau deploy, kiểm tra các URL trong cả hai manifest trả đúng file/checksum, nhất là `/runtime/mediapipe/vision_wasm_internal.js`, rồi thử tải/cache bằng browser sạch. Nếu PWA báo bản cập nhật, kết thúc hội thoại trước khi cập nhật; không cần xóa kho dữ liệu người dùng.
+
 ## Bản nâng cấp v26: Khởi tạo lại Docker & Cập nhật Public Tunnel — 17/10/2026
 
 Public hiện phục vụ **signemo:auto-compat-20261017-v26**, container `ou-khinghip-web-1` trên cổng 8080. Quick Tunnel mới: **https://remedy-neck-vendors-incl.trycloudflare.com/**.

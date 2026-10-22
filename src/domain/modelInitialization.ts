@@ -1,9 +1,18 @@
 export type ModelInitializationCode =
-  'worker' | 'timeout' | 'network' | 'storage' | 'integrity' | 'gpu' | 'wasm' | 'memory';
+  | 'worker'
+  | 'timeout'
+  | 'network'
+  | 'missing-assets'
+  | 'storage'
+  | 'integrity'
+  | 'gpu'
+  | 'wasm'
+  | 'memory';
 const codes = new Set<ModelInitializationCode>([
   'worker',
   'timeout',
   'network',
+  'missing-assets',
   'storage',
   'integrity',
   'gpu',
@@ -65,6 +74,8 @@ export function modelInitializationMessage(
   if (code === 'memory') return 'Thiết bị chưa đủ bộ nhớ để mở AI. Hãy đóng bớt tab rồi thử lại.';
   if (code === 'network')
     return `Mất kết nối khi chuẩn bị ${name}. Giữ mạng ổn định rồi thử lại; các file đã tải đủ vẫn được giữ.`;
+  if (code === 'missing-assets')
+    return 'Bản ứng dụng trên máy chủ đang thiếu tài nguyên AI. Cần cập nhật bản triển khai; các file đã tải đủ vẫn được giữ.';
   if (code === 'integrity')
     return `Gói ${name} chưa đầy đủ hoặc không khớp. Hãy thử chuẩn bị lại gói này.`;
   if (code === 'timeout') return `Khởi tạo ${name} quá lâu. Hãy đóng bớt tab rồi thử lại.`;

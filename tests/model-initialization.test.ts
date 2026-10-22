@@ -16,6 +16,9 @@ it('projects errors to fixed codes and copy without forwarding arbitrary excepti
   expect(modelInitializationCode(new TypeError('Failed to fetch private URL'))).toBe('network');
   expect(modelInitializationCode(new Error('WebAssembly code generation disallowed'))).toBe('wasm');
   expect(workerInitializationCode('private transcript')).toBe('worker');
+  expect(workerInitializationCode('missing-assets')).toBe('missing-assets');
+  expect(modelInitializationMessage('assets', 'missing-assets')).toContain('máy chủ đang thiếu');
+  expect(modelInitializationMessage('assets', 'missing-assets')).not.toContain('Mất kết nối');
   expect(
     auditMessage({
       code: 'ai-preparation-failed',

@@ -1,5 +1,6 @@
 import type { ModelManifest } from '../../shared/contracts';
 import { downloadCandidate } from './downloadCandidate';
+import { runAssetQueue } from './runAssetQueue';
 import { conversationProfile, selectedCoreAssets } from '../inference/conversationProfile';
 export const ASSET_CACHE = 'signemo-models-v1';
 const verifiedCachedAssets = new Map<string, Promise<void>>();
@@ -171,47 +172,43 @@ export async function prepareOffline(
     throw new Error('Trình duyệt chưa hỗ trợ lưu offline.');
   const manifest = await loadManifest(signal);
   const cache = await caches.open(ASSET_CACHE);
-  let done = 0;
-  const total = manifest.assets.reduce((s, a) => s + a.bytes, 0);
-  for (const asset of manifest.assets) {
-    signal?.throwIfAborted();
-    onProgress(asset.url.split('/').pop()!, done, total);
-    let response = await cache.match(asset.url);
-    if (response) {
-      try {
-        await verifyCachedAsset(ASSET_CACHE, response.clone(), asset);
-      } catch {
-        forgetCachedAsset(ASSET_CACHE, asset);
-        await cache.delete(asset.url);
-        response = undefined;
-      }
-    }
-    if (!response) {
-      const bytes = await downloadCandidate(
-        asset,
-        (received) => onProgress(asset.url.split('/').pop()!, done + received, total),
-        signal,
-      );
-      const buffer = bytes.buffer;
-      await verifyBytes(buffer, asset);
+  await runAssetQueue(
+    manifest.assets,
+    async (asset, report, signal) => {
       signal?.throwIfAborted();
-      await cache.put(
-        asset.url,
-        new Response(buffer, {
-          headers: {
-            'Content-Type': asset.url.endsWith('.wasm')
-              ? 'application/wasm'
-              : asset.url.endsWith('.mjs') || asset.url.endsWith('.js')
-                ? 'application/javascript'
-                : 'application/octet-stream',
-          },
-        }),
-      );
-      markCachedAssetVerified(ASSET_CACHE, asset);
-    }
-    done += asset.bytes;
-    onProgress(asset.url.split('/').pop()!, done, total);
-  }
+      let response = await cache.match(asset.url);
+      if (response) {
+        try {
+          await verifyCachedAsset(ASSET_CACHE, response.clone(), asset);
+        } catch {
+          forgetCachedAsset(ASSET_CACHE, asset);
+          await cache.delete(asset.url);
+          response = undefined;
+        }
+      }
+      if (!response) {
+        const bytes = await downloadCandidate(asset, report, signal);
+        const buffer = bytes.buffer;
+        await verifyBytes(buffer, asset);
+        signal?.throwIfAborted();
+        await cache.put(
+          asset.url,
+          new Response(buffer, {
+            headers: {
+              'Content-Type': asset.url.endsWith('.wasm')
+                ? 'application/wasm'
+                : asset.url.endsWith('.mjs') || asset.url.endsWith('.js')
+                  ? 'application/javascript'
+                  : 'application/octet-stream',
+            },
+          }),
+        );
+        markCachedAssetVerified(ASSET_CACHE, asset);
+      }
+    },
+    (asset, done, total) => onProgress(asset.url.split('/').pop()!, done, total),
+    signal,
+  );
   await cache.put(
     '/models/manifest.json',
     new Response(JSON.stringify(manifest), { headers: { 'Content-Type': 'application/json' } }),
