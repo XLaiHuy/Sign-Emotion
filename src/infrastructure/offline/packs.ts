@@ -164,6 +164,7 @@ export async function preparePack(
     },
     (_asset, done, total) => progress(done, total),
     signal,
+    { maxConcurrency: 6, byteBudget: 96 * 1048576 },
   );
   signal?.throwIfAborted();
   // A browser can evict earlier CacheStorage entries while a large pack is

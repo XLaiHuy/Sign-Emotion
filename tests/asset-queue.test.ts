@@ -95,3 +95,25 @@ it('cancels both active transfers and never starts the next batch', async () => 
   expect(started).toEqual([1, 2]);
   expect(stopped).toEqual([1, 2]);
 });
+
+it('supports higher HTTP/2 concurrency up to the configured byte budget', async () => {
+  const assets = [10, 10, 10, 10, 10, 10].map((mib, id) => ({
+    id,
+    bytes: mib * 1048576,
+  }));
+  let active = 0;
+  let maxConcurrent = 0;
+  await runAssetQueue(
+    assets,
+    async () => {
+      active++;
+      maxConcurrent = Math.max(maxConcurrent, active);
+      await new Promise((resolve) => setTimeout(resolve, 2));
+      active--;
+    },
+    vi.fn(),
+    undefined,
+    { maxConcurrency: 6, byteBudget: 96 * 1048576 },
+  );
+  expect(maxConcurrent).toBe(6);
+});

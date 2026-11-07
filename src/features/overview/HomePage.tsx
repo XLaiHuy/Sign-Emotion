@@ -52,7 +52,7 @@ export function HomePage({
   onRetrySpeedMode,
 }: HomePageProps) {
   const preparation = usePreparationStatus();
-  const loading = preparation.preparing || preparing;
+  const loading = !preparation.coreReady && (preparation.preparing || preparing);
   const [selectedExpression, setSelectedExpression] = useState<Expression | null>('happy');
   const [avatar3DFailed, setAvatar3DFailed] = useState(false);
   const [avatarReplay, setAvatarReplay] = useState(0);

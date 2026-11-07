@@ -1,9 +1,10 @@
-/** Two transfers at most; a file larger than the byte budget runs alone. */
+/** Configurable concurrent transfers; a file larger than the byte budget runs alone. */
 export async function runAssetQueue<T extends { bytes: number }>(
   assets: readonly T[],
   prepare: (asset: T, progress: (received: number) => void, signal: AbortSignal) => Promise<void>,
   progress: (asset: T, done: number, total: number) => void,
   signal?: AbortSignal,
+  options?: { maxConcurrency?: number; byteBudget?: number },
 ) {
   const controller = new AbortController();
   const abort = () => controller.abort(signal?.reason);
@@ -11,14 +12,22 @@ export async function runAssetQueue<T extends { bytes: number }>(
   if (signal?.aborted) abort();
   const received = assets.map(() => 0);
   const total = assets.reduce((sum, asset) => sum + asset.bytes, 0);
-  const budget = 48 * 1048576;
+  const maxConcurrency = Math.max(1, options?.maxConcurrency ?? 2);
+  const budget = options?.byteBudget ?? 48 * 1048576;
   let cursor = 0;
   try {
     while (cursor < assets.length) {
       controller.signal.throwIfAborted();
       const batch = [cursor++];
-      if (cursor < assets.length && assets[batch[0]].bytes + assets[cursor].bytes <= budget)
+      let batchBytes = assets[batch[0]].bytes;
+      while (
+        batch.length < maxConcurrency &&
+        cursor < assets.length &&
+        batchBytes + assets[cursor].bytes <= budget
+      ) {
+        batchBytes += assets[cursor].bytes;
         batch.push(cursor++);
+      }
       const pending = batch.map(async (index) => {
         const asset = assets[index];
         const report = (bytes: number) => {

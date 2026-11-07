@@ -1171,7 +1171,7 @@ export function ConversationPage({
               </p>
             )}
 
-            {!offline && (!coreReady || preparing || Boolean(preparationError)) && (
+            {!offline && (!coreReady || Boolean(preparationError)) && (
               <div className="model-readiness" role="status">
                 <span>
                   {preparing

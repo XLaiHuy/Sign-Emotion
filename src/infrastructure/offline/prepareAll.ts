@@ -53,16 +53,22 @@ export async function prepareAllModels(
   signal?.throwIfAborted();
   const [manifest, packs] = await Promise.all([loadManifest(signal), loadPacks(signal)]);
   const appBytes = manifest.assets.reduce((sum, asset) => sum + asset.bytes, 0);
+  const speechPack = packs.find((pack) => pack.id === 'speech');
+  const speechBytes = speechPack
+    ? speechPack.assets.reduce((sum, asset) => sum + asset.bytes, 0)
+    : 0;
   const packBytes = packs.reduce(
     (sum, pack) => sum + pack.assets.reduce((packSum, asset) => packSum + asset.bytes, 0),
     0,
   );
   const candidateBytes = conversationProfile().id === 'pc-candidate' ? candidateAssetBytes : 0;
+  const coreTotal = appBytes + speechBytes + candidateBytes;
   const total = appBytes + packBytes + candidateBytes;
   let offset = 0;
 
   await prepareOffline(
-    (label, done) => onProgress({ label: `Ứng dụng · ${label}`, done, total }),
+    (label, done) =>
+      onProgress({ label: `Ứng dụng · ${label}`, done: Math.min(coreTotal, done), total: coreTotal }),
     signal,
     true,
   );
@@ -72,20 +78,34 @@ export async function prepareAllModels(
   for (const pack of ordered) {
     signal?.throwIfAborted();
     const bytes = pack.assets.reduce((sum, asset) => sum + asset.bytes, 0);
+    const isCoreSpeech = pack.id === 'speech';
     await preparePack(
       pack,
-      (done) => onProgress({ label: labelFor(pack.id), done: offset + done, total }),
+      (done) =>
+        onProgress(
+          isCoreSpeech
+            ? {
+                label: labelFor(pack.id),
+                done: Math.min(coreTotal, offset + done),
+                total: coreTotal,
+              }
+            : {
+                label: `${labelFor(pack.id)} (tải nền)`,
+                done,
+                total: bytes,
+              },
+        ),
       signal,
     );
     offset += bytes;
-    if (pack.id === 'speech') {
+    if (isCoreSpeech) {
       if (candidateBytes) {
         await prepareCandidateAssets(
           (done) =>
             onProgress({
               label: 'Phụ đề và khuôn mặt · đang tải và kiểm tra',
-              done: offset + done,
-              total,
+              done: Math.min(coreTotal, offset + done),
+              total: coreTotal,
             }),
           signal,
         );

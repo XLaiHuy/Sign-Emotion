@@ -208,6 +208,7 @@ export async function prepareOffline(
     },
     (asset, done, total) => onProgress(asset.url.split('/').pop()!, done, total),
     signal,
+    { maxConcurrency: 6, byteBudget: 96 * 1048576 },
   );
   await cache.put(
     '/models/manifest.json',

@@ -86,3 +86,24 @@ it('waits for the shared core owner before preparing optional assets', async () 
   await task;
   expect(vi.mocked(preparePack).mock.calls.map(([pack]) => pack.id)).toEqual(['speech', 'emotion']);
 });
+
+it('reports core startup progress against coreTotal (app + speech) and optional emotion pack separately', async () => {
+  vi.mocked(prepareOffline).mockImplementation(async (onProgress) => {
+    onProgress('enet_b2_8.onnx', 10, 10);
+    return { assets: [{ bytes: 10 }] } as never;
+  });
+  vi.mocked(preparePack).mockImplementation(async (pack, onProgress) => {
+    const bytes = pack.assets.reduce((sum, asset) => sum + asset.bytes, 0);
+    onProgress(bytes, bytes);
+  });
+  const updates: Array<{ label: string; done: number; total: number }> = [];
+  await prepareAllModels(
+    (progress) => updates.push(progress),
+    () => {},
+  );
+  expect(updates).toEqual([
+    { label: 'Ứng dụng · enet_b2_8.onnx', done: 10, total: 40 },
+    { label: 'phụ đề', done: 40, total: 40 },
+    { label: 'gợi ý kết hợp (tải nền)', done: 20, total: 20 },
+  ]);
+});
