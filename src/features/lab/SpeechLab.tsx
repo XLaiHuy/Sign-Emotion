@@ -8,11 +8,13 @@ import { extractProsody } from '../../domain/prosody';
 import { estimateFileAudioQuality } from '../../domain/audio';
 import { ResearchOptions, useLabResearch } from './ResearchOptions';
 import { emitAudit } from '../../infrastructure/audit/log';
-import { AsrComparison } from './AsrComparison';
+import { AsrComparison, type RegionalDialect } from './AsrComparison';
 
 export function SpeechLab() {
   const [file, setFile] = useState<File | null>(null);
   const [reference, setReference] = useState('');
+  const [dialect, setDialect] = useState<RegionalDialect>('Không rõ');
+  const [gainNormalization, setGainNormalization] = useState(true);
   const [busy, setBusy] = useState(false);
   const [comparing, setComparing] = useState(false);
   const [error, setError] = useState('');
@@ -124,6 +126,7 @@ export function SpeechLab() {
             samples: data,
             startMs: 0,
             endMs: decoded.duration * 1000,
+            gainNormalization,
           },
           [data.buffer],
         );
@@ -234,10 +237,36 @@ export function SpeechLab() {
             maxLength={10000}
           />
         </label>
+        <label className="field">
+          Khu vực giọng / Vùng miền
+          <select
+            aria-label="Khu vực giọng"
+            value={dialect}
+            disabled={busy || comparing}
+            onChange={(e) => setDialect(e.target.value as RegionalDialect)}
+          >
+            <option value="Không rõ">Không rõ / Toàn quốc</option>
+            <option value="Bắc">Giọng Bắc</option>
+            <option value="Trung">Giọng Trung</option>
+            <option value="Nam">Giọng Nam</option>
+          </select>
+        </label>
+        <label className="checkbox-label">
+          <input
+            type="checkbox"
+            aria-label="Chuẩn hóa biên độ tín hiệu"
+            checked={gainNormalization}
+            disabled={busy || comparing}
+            onChange={(e) => setGainNormalization(e.target.checked)}
+          />
+          <span>Chuẩn hóa biên độ (Gain Normalization cho ASR)</span>
+        </label>
         <ResearchOptions research={research} disabled={busy || comparing} onBusy={setComparing} />
         <AsrComparison
           file={file}
           reference={reference}
+          dialect={dialect}
+          gainNormalization={gainNormalization}
           disabled={busy || comparing}
           onBusy={setComparing}
         />

@@ -66,7 +66,7 @@ export class ProsodyProvider {
       digest !== this.artifact.manifest.sha256
     )
       throw new Error('Tone model checksum mismatch');
-    ort.env.wasm.wasmPaths = '/runtime/ort/';
+    ort.env.wasm.wasmPaths = `${self.location.origin}/runtime/ort/`;
     ort.env.wasm.numThreads = 1;
     ort.env.wasm.proxy = false;
     this.session = await ort.InferenceSession.create(this.artifact.bytes, {

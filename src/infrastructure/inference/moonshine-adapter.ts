@@ -1,4 +1,9 @@
 import type { AsrAdapter, AsrRequest } from '../../domain/asr';
+import {
+  type AsrGainParams,
+  applyAsrGain,
+  computeAsrGainParams,
+} from '../../domain/audio';
 import type { TranscriptSegment } from '../../domain/conversation';
 import {
   MOONSHINE_ASSETS,
@@ -209,6 +214,7 @@ export class MoonshineStreamingAdapter implements AsrAdapter {
       this.stream.start();
       this.activeId = request.id;
       this.fedSamples = 0;
+      this.gainParams = computeAsrGainParams(request.samples, request.gainNormalization);
     }
     const stream = this.stream;
     if (!stream) throw new Error('Không tạo được luồng phụ đề Moonshine.');
@@ -216,7 +222,9 @@ export class MoonshineStreamingAdapter implements AsrAdapter {
 
     const start = performance.now();
     if (request.samples.length > this.fedSamples) {
-      stream.addAudio(request.samples.subarray(this.fedSamples), 16000);
+      const deltaRaw = request.samples.subarray(this.fedSamples);
+      const deltaNormalized = applyAsrGain(deltaRaw, this.gainParams);
+      stream.addAudio(deltaNormalized, 16000);
       this.fedSamples = request.samples.length;
     }
     const generation = this.generation;
@@ -248,11 +256,16 @@ export class MoonshineStreamingAdapter implements AsrAdapter {
   }
 
   private stream: MoonshineStream | null = null;
+  private gainParams: AsrGainParams = { gain: 1, mean: 0 };
+  get currentGainParams(): AsrGainParams {
+    return this.gainParams;
+  }
   private closeStream() {
     this.stream?.close();
     this.stream = null;
     this.activeId = '';
     this.fedSamples = 0;
+    this.gainParams = { gain: 1, mean: 0 };
   }
 
   reset() {

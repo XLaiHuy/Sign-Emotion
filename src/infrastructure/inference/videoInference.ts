@@ -1,4 +1,5 @@
-import type { InferenceResult } from '../../shared/contracts';
+import type { FaceExperiment, InferenceResult } from '../../shared/contracts';
+import { faceExperimentConfig } from '../../domain/face/experiments';
 import type { AuxiliaryArtifact } from './auxiliary';
 import { faceProfileContract, type FaceModelProfile } from './face-model-profile';
 import faceWorkerUrl from './face.worker.ts?worker&url';
@@ -10,6 +11,7 @@ export class InferenceClient {
     resolve: (r: InferenceResult) => void;
     reject: (e: Error) => void;
     timer: ReturnType<typeof setTimeout>;
+    started: number;
   } | null = null;
   private readyResolve!: () => void;
   private readyReject!: (e: Error) => void;
@@ -22,8 +24,15 @@ export class InferenceClient {
     candidate?: AuxiliaryArtifact,
     research = false,
     faceProfile: FaceModelProfile = 'product',
+    faceExperiment?: FaceExperiment,
   ) {
-    if (faceProfile === 'product' && conversationProfile().id === 'pc-candidate') {
+    if (faceExperiment !== undefined)
+      faceExperimentConfig(faceExperiment, research, location.hostname);
+    if (
+      faceExperiment === undefined &&
+      faceProfile === 'product' &&
+      conversationProfile().id === 'pc-candidate'
+    ) {
       faceProfile = conversationProfile().face;
       research = true;
     }
@@ -53,10 +62,16 @@ export class InferenceClient {
         const p = this.pending;
         this.pending = null;
         clearTimeout(p.timer);
-        p.resolve(e.data.result);
+        p.resolve({ ...e.data.result, latencyMs: performance.now() - p.started });
       }
     };
-    this.worker.postMessage({ type: 'init', candidate, research, faceProfile });
+    this.worker.postMessage({
+      type: 'init',
+      candidate,
+      research,
+      faceProfile,
+      ...(faceExperiment === undefined ? {} : { faceExperiment }),
+    });
   }
   async infer(
     video: HTMLVideoElement,
@@ -66,6 +81,7 @@ export class InferenceClient {
     await this.ready;
     if (this.closed) throw new Error('Đã dừng AI');
     if (this.pending || this.capturing) throw new Error('Một lượt xử lý đang chạy');
+    const started = performance.now();
     const width = Math.min(640, video.videoWidth),
       height = Math.round((video.videoHeight * width) / video.videoWidth);
     this.capturing = true;
@@ -82,6 +98,7 @@ export class InferenceClient {
     this.sequence++;
     return new Promise((resolve, reject) => {
       this.pending = {
+        started,
         resolve,
         reject,
         timer: setTimeout(() => this.close(new Error('Xử lý khung hình quá lâu')), 12_000),

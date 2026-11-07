@@ -115,3 +115,68 @@ it('keeps all missing PCM when intermediate partials are skipped and rejects bac
   expect(close).toHaveBeenCalledOnce();
   await adapter.dispose();
 });
+
+it('freezes gain params across deltas in the same utterance and recalculates on new utterance', async () => {
+  const addAudio = vi.fn();
+  const createStream = vi.fn(() => ({
+    start: vi.fn(),
+    stop: vi.fn(),
+    addAudio,
+    transcribe: vi.fn(() => ({ lines: [{ text: 'bản dịch' }] })),
+    close: vi.fn(),
+  }));
+  const adapter = new MoonshineStreamingAdapter(async () => ({
+    transcriber: { createStream, close: vi.fn() },
+    forceUpdate: 1,
+  }));
+
+  await adapter.prepare();
+
+  // Utterance 1, chunk 1: 16000 samples with RMS ~0.02
+  const chunk1 = new Float32Array(16000);
+  for (let i = 0; i < chunk1.length; i++) {
+    chunk1[i] = 0.028284 * Math.sin((2 * Math.PI * 200 * i) / 16000);
+  }
+  await adapter.acceptPcm({ ...request('utt-1', chunk1), gainNormalization: true }, false);
+  const gain1 = adapter.currentGainParams.gain;
+  expect(gain1).toBeGreaterThan(3.5);
+
+  // Utterance 1, chunk 2: cumulative 24000 samples, new 8000 samples are louder (e.g. 0.06)
+  const chunk2 = new Float32Array(24000);
+  chunk2.set(chunk1, 0);
+  for (let i = 16000; i < 24000; i++) {
+    chunk2[i] = 0.0848 * Math.sin((2 * Math.PI * 200 * i) / 16000);
+  }
+  await adapter.acceptPcm({ ...request('utt-1', chunk2, 2), gainNormalization: true }, false);
+  const gain2 = adapter.currentGainParams.gain;
+  // Gain MUST be frozen across deltas within the same utterance
+  expect(gain2).toBe(gain1);
+
+  // Check that the delta fed to addAudio was scaled by gain1
+  const fedDelta = addAudio.mock.calls[1][0] as Float32Array;
+  expect(fedDelta.length).toBe(8000);
+  const rawDelta = chunk2.subarray(16000);
+  expect(fedDelta[100]).toBeCloseTo(rawDelta[100] * gain1, 4);
+
+  // Finish utterance 1
+  await adapter.acceptPcm(
+    { ...request('utt-1', chunk2, 3), boundary: 'silence', gainNormalization: true },
+    true,
+  );
+  // On closeStream, gainParams resets to gain=1, mean=0
+  expect(adapter.currentGainParams.gain).toBe(1);
+
+  // Utterance 2: new utterance with different loudness (e.g. 0.04)
+  const chunk3 = new Float32Array(16000);
+  for (let i = 0; i < chunk3.length; i++) {
+    chunk3[i] = 0.05656 * Math.sin((2 * Math.PI * 200 * i) / 16000);
+  }
+  await adapter.acceptPcm({ ...request('utt-2', chunk3), gainNormalization: true }, false);
+  const gain3 = adapter.currentGainParams.gain;
+  // Gain is recalculated for new utterance
+  expect(gain3).not.toBe(gain1);
+  expect(gain3).toBeCloseTo(2, 1);
+
+  await adapter.dispose();
+});
+

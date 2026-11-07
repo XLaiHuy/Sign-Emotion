@@ -26,7 +26,7 @@ export class ToneModel {
       TONE_PROFILE.url,
       new Response(bytes, { headers: { 'Content-Type': 'application/octet-stream' } }),
     );
-    ort.env.wasm.wasmPaths = '/runtime/ort/';
+    ort.env.wasm.wasmPaths = `${self.location.origin}/runtime/ort/`;
     ort.env.wasm.numThreads = 1;
     ort.env.wasm.proxy = false;
     this.session = await ort.InferenceSession.create(bytes, {

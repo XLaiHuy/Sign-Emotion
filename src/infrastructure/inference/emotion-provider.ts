@@ -29,7 +29,7 @@ export class EmotionProvider {
   private tokenizer: PhoBertTokenizer | null = null;
   private textLabels: string[] = [];
   async initialize() {
-    ort.env.wasm.wasmPaths = '/runtime/ort/';
+    ort.env.wasm.wasmPaths = `${self.location.origin}/runtime/ort/`;
     ort.env.wasm.numThreads = textWasmThreads();
     ort.env.wasm.proxy = false;
     const [vocab, codes, textConfig] = await Promise.all([

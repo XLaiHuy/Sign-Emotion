@@ -16,3 +16,14 @@ it('accepts only the explicit experimental Vietnamese streaming profile', () => 
     settingsSchema.safeParse({ ...defaultSettings, asrProfile: 'unknown-model' }).success,
   ).toBe(false);
 });
+
+it('accepts gipformer-research profile and preserves product default', () => {
+  expect(
+    settingsSchema.parse({ ...defaultSettings, asrProfile: 'gipformer-research' }).asrProfile,
+  ).toBe('gipformer-research');
+  expect(defaultSettings.asrProfile).toBe('product');
+  expect(
+    settingsSchema.safeParse({ ...defaultSettings, asrProfile: 'unsupported-profile' }).success,
+  ).toBe(false);
+});
+

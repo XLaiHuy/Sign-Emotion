@@ -1,7 +1,7 @@
 /// <reference lib="webworker" />
 import * as ort from 'onnxruntime-web/wasm';
 import { UtteranceBuilder } from '../../domain/audio';
-ort.env.wasm.wasmPaths = '/runtime/ort/';
+ort.env.wasm.wasmPaths = `${self.location?.origin ?? ''}/runtime/ort/`;
 ort.env.wasm.numThreads = 1;
 ort.env.wasm.proxy = false;
 let session: ort.InferenceSession | null = null;
@@ -13,6 +13,7 @@ let queued = 0;
 let failed = false;
 let lastInterimEndSample = 0;
 let interimRevision = 0;
+let interimsEnabled = true;
 let partialPolicy: 'baseline' | 'early-candidate' | 'streaming-candidate' = 'baseline';
 let partialIntervalSamples = 12_800;
 let requestedPartialInterval = 8192;
@@ -40,8 +41,9 @@ async function frame(samples: Float32Array, offset: number) {
       lastInterimEndSample = chunk.endSample;
       interimRevision = 0;
     } else if (
+      interimsEnabled &&
       offset + samples.length - lastInterimEndSample >=
-      (interimRevision === 0 ? partialIntervalSamples : requestedPartialInterval)
+        (interimRevision === 0 ? partialIntervalSamples : requestedPartialInterval)
     ) {
       // Copy the growing utterance only when a partial can actually be sent.
       // Previously snapshot() copied it every 32 ms after becoming eligible.
@@ -68,7 +70,9 @@ self.onmessage = (event) => {
         : event.data.fastEndpointing === true
           ? 13
           : 17,
+      typeof event.data.maxFrames === 'number' ? event.data.maxFrames : 94,
     );
+    interimsEnabled = event.data.interims !== false;
     partialPolicy =
       event.data.streaming === true
         ? 'streaming-candidate'

@@ -11,6 +11,7 @@ export function useSignPlayback(
 ) {
   const queue = useRef(new SignPlaybackQueue());
   const session = useRef<string | undefined>(undefined);
+  const lastAutoId = useRef<string | undefined>(undefined);
   const manual = useRef(0);
   const [manualSelection, setManualSelection] = useState<SignRequest | null>(null);
   const [autoSelection, setAutoSelection] = useState<SignRequest | null>(null);
@@ -19,6 +20,7 @@ export function useSignPlayback(
   useEffect(() => {
     if (session.current !== record?.id) {
       queue.current.clear();
+      lastAutoId.current = undefined;
       setManualSelection(null);
       setAutoSelection(null);
       session.current = record?.id;
@@ -27,12 +29,19 @@ export function useSignPlayback(
       // Consume old finals without playing them: enabling later must not replay history.
       queue.current.update(utterances, []);
       queue.current.dismiss();
+      lastAutoId.current = undefined;
       setAutoSelection(null);
       if (!enabled) setManualSelection(null);
       return;
     }
     queue.current.update(utterances, catalogue);
-    setAutoSelection(queue.current.current);
+    const nextAuto = queue.current.current;
+    if (nextAuto && nextAuto.id !== lastAutoId.current) {
+      lastAutoId.current = nextAuto.id;
+      // Newly spoken live utterance takes priority over an older manual preview
+      setManualSelection(null);
+    }
+    setAutoSelection(nextAuto);
   }, [record?.id, utterances, catalogue, enabled, active]);
 
   const clear = useCallback(() => {

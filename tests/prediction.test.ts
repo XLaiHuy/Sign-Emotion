@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { PredictionGate, classify, softmax, effectiveDwellMs } from '../src/domain/face/prediction';
+import {
+  PredictionGate,
+  applyBlendshapePrior,
+  classify,
+  defaultFaceCalibration,
+  effectiveDwellMs,
+  softmax,
+} from '../src/domain/face/prediction';
 import { MODEL_VERSION, defaultSettings, type InferenceResult } from '../src/shared/contracts';
 const result = (
   timestamp: number,
@@ -116,5 +123,75 @@ describe('prediction gating', () => {
     );
     gate.reset();
     expect(gate.update({ ...result(0), auxiliary: aux }).result.decisionReason).toBe('stabilizing');
+  });
+  it('recognizes subtle happy, sad, fear, disgust and neutral fallback with defaultFaceCalibration and blendshape priors', () => {
+    const profile = defaultFaceCalibration(defaultSettings.threshold);
+    // Subtle smile (closed-mouth / cheek squint) boosted by blendshape prior
+    const subtleSmileScores = applyBlendshapePrior(
+      [0.32, 0.34, 0.04, 0.05, 0.03, 0.03, 0.03, 0.16],
+      [
+        { categoryName: 'mouthSmileLeft', score: 0.42 },
+        { categoryName: 'mouthSmileRight', score: 0.44 },
+        { categoryName: 'cheekSquintLeft', score: 0.3 },
+        { categoryName: 'cheekSquintRight', score: 0.28 },
+      ],
+    );
+    expect(classify(subtleSmileScores, defaultSettings.threshold, profile).label).toBe('happy');
+
+    // Subtle sad boosted by frown + inner brow raise
+    const subtleSadScores = applyBlendshapePrior(
+      [0.36, 0.04, 0.03, 0.31, 0.05, 0.04, 0.04, 0.13],
+      [
+        { categoryName: 'mouthFrownLeft', score: 0.35 },
+        { categoryName: 'mouthFrownRight', score: 0.35 },
+        { categoryName: 'browInnerUp', score: 0.38 },
+      ],
+    );
+    expect(classify(subtleSadScores, defaultSettings.threshold, profile).label).toBe('sad');
+
+    // Subtle fear boosted by wide eyes + inner brow + mouth stretch
+    const subtleFearScores = applyBlendshapePrior(
+      [0.25, 0.03, 0.28, 0.06, 0.04, 0.04, 0.24, 0.06],
+      [
+        { categoryName: 'eyeWideLeft', score: 0.4 },
+        { categoryName: 'eyeWideRight', score: 0.4 },
+        { categoryName: 'browInnerUp', score: 0.42 },
+        { categoryName: 'mouthStretchLeft', score: 0.32 },
+        { categoryName: 'mouthStretchRight', score: 0.32 },
+      ],
+    );
+    expect(classify(subtleFearScores, defaultSettings.threshold, profile).label).toBe('fear');
+
+    // Subtle disgust boosted by nose sneer + upper lip raise + brow down
+    const subtleDisgustScores = applyBlendshapePrior(
+      [0.28, 0.03, 0.03, 0.1, 0.16, 0.24, 0.04, 0.12],
+      [
+        { categoryName: 'noseSneerLeft', score: 0.38 },
+        { categoryName: 'noseSneerRight', score: 0.36 },
+        { categoryName: 'mouthUpperUpLeft', score: 0.3 },
+        { categoryName: 'mouthUpperUpRight', score: 0.3 },
+        { categoryName: 'browDownLeft', score: 0.35 },
+        { categoryName: 'browDownRight', score: 0.35 },
+      ],
+    );
+    expect(classify(subtleDisgustScores, defaultSettings.threshold, profile).label).toBe('disgust');
+
+    // Calm face where an active class slightly leads but is below threshold falls back to neutral instead of low-score
+    const calmFace = [0.31, 0.33, 0.06, 0.08, 0.05, 0.05, 0.05, 0.07];
+    expect(classify(calmFace, defaultSettings.threshold, profile)).toMatchObject({
+      label: 'neutral',
+      status: 'valid',
+    });
+
+    // Hold hysteresis maintains active expression across a slight score dip
+    const gate = new PredictionGate(defaultSettings, profile);
+    gate.update({ ...result(0, 1), scores: subtleSmileScores });
+    const shown = gate.update({ ...result(200, 1), scores: subtleSmileScores });
+    expect(shown.result.label).toBe('happy');
+    const dipped = gate.update({
+      ...result(400, 1),
+      scores: [0.3, 0.34, 0.06, 0.06, 0.06, 0.06, 0.06, 0.06],
+    });
+    expect(dipped.result.label).toBe('happy');
   });
 });

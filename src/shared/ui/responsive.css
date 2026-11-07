@@ -449,26 +449,27 @@ canvas {
 }
 
 .recovery-notice {
-  margin: 0 0 16px;
-  padding: 12px 16px;
-  border: 1px solid #e4d7b4;
-  border-radius: 14px;
-  background: #fbf7eb;
-  color: #574c35;
+  margin: 0 0 10px;
+  padding: 10px 14px;
+  border: 1px solid rgba(245, 158, 11, 0.45);
+  border-radius: 12px;
+  background: rgba(120, 53, 15, 0.28);
+  color: #fde68a;
 }
 .recent-activity {
-  margin-top: 14px;
-  padding: 12px 14px;
-  border: 1px solid var(--border, #e3e8df);
+  margin-top: 12px;
+  padding: 10px 12px;
+  border: 1px solid rgba(51, 65, 85, 0.75);
   border-radius: 12px;
-  background: #fff;
-  color: #53675d;
+  background: rgba(2, 6, 23, 0.78);
+  color: #cbd5e1;
   font-size: 13px;
 }
 .recent-activity summary {
   min-height: 28px;
   cursor: pointer;
   font-weight: 600;
+  color: #f8fafc;
 }
 .recent-activity ol {
   display: grid;
@@ -480,7 +481,7 @@ canvas {
   overflow-wrap: anywhere;
 }
 .recent-activity time {
-  color: var(--muted, #6d7b73);
+  color: var(--muted, #94a3b8);
   font-variant-numeric: tabular-nums;
 }
 .activity-toolbar,
@@ -502,23 +503,24 @@ canvas {
 .activity-event {
   min-width: 0;
   padding: 10px 12px;
-  border: 1px solid var(--border, #e3e8df);
+  border: 1px solid rgba(51, 65, 85, 0.72);
+  background: rgba(15, 23, 42, 0.85);
   border-radius: 12px;
   overflow-wrap: anywhere;
 }
 .activity-event time,
 .activity-event small {
   display: block;
-  color: var(--muted, #6d7b73);
+  color: var(--muted, #94a3b8);
 }
 .activity-event p {
   margin: 4px 0;
 }
 .activity-event.level-warning {
-  border-color: #e8d9b5;
+  border-color: rgba(245, 158, 11, 0.5);
 }
 .activity-event.level-error {
-  border-color: #edd0c6;
+  border-color: rgba(244, 63, 94, 0.5);
 }
 @media (max-width: 640px) {
   .activity-toolbar,

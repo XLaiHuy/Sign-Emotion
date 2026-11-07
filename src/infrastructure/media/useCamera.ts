@@ -9,7 +9,12 @@ import {
   type SessionMetrics,
   type Settings,
 } from '../../shared/contracts';
-import { PredictionGate, emptyResult, percentile } from '../../domain/face/prediction';
+import {
+  PredictionGate,
+  defaultFaceCalibration,
+  emptyResult,
+  percentile,
+} from '../../domain/face/prediction';
 import { elapsedMs, frameLatencyMs } from '../../domain/face/frameTiming';
 import type { AuxiliaryArtifact } from '../inference/auxiliary';
 import { makeWorkerReady } from '../inference/workerReady';
@@ -53,7 +58,7 @@ export function useCamera(
   const pacer = useRef(new FramePacer());
   const recentTiming = useRef(new RecentFaceTiming());
   const running = useRef(false);
-  const gate = useRef(new PredictionGate(settings));
+  const gate = useRef(new PredictionGate(settings, defaultFaceCalibration(settings.threshold)));
   const callbackRef = useRef(onHaptic);
   callbackRef.current = onHaptic;
   const candidateRef = useRef(candidate);
@@ -96,7 +101,7 @@ export function useCamera(
   const modelVersion = useRef<string>(MODEL_VERSION);
   const intervalRef = useRef(frameIntervalMs);
   useEffect(() => {
-    gate.current.configure(settings);
+    gate.current.configure(settings, defaultFaceCalibration(settings.threshold));
     setResult(emptyResult());
   }, [settings]);
   const stop = useCallback(() => {
@@ -579,7 +584,7 @@ export function useCamera(
     }
   }, [stop]);
   const setFrameIntervalMs = useCallback((value: number) => {
-    if (Number.isFinite(value)) intervalRef.current = Math.min(1000, Math.max(200, value));
+    if (Number.isFinite(value)) intervalRef.current = Math.min(1000, Math.max(120, value));
   }, []);
   const getLiveP95 = useCallback(() => percentile(durations.current.slice(-60), 0.95), []);
   const getRecentServiceMs = useCallback(() => recentTiming.current.mean(performance.now()), []);

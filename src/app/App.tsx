@@ -335,7 +335,7 @@ export default function App() {
 
   return (
     <div
-      className={`app-shell ${menuOpen ? 'menu-open' : ''}`}
+      className={`app-shell ${menuOpen ? 'menu-open' : ''}${page === 'conversation' ? ' dashboard-100vh' : ''}`}
       data-build={import.meta.env.VITE_BUILD_ID || 'development'}
     >
       <a className="skip-link" href="#main">
@@ -486,7 +486,7 @@ export default function App() {
             </div>
           )}
           {(page === 'conversation' || page === 'home') && (
-            <div hidden={page === 'home'}>
+            <div className="conversation-host" hidden={page === 'home'}>
               <ConversationPage
                 visible={page === 'conversation'}
                 onPrepared={onPrepared}
@@ -573,12 +573,14 @@ export default function App() {
               )}
             </section>
           )}
-          <footer className="page-footer">
-            <span>SignEmo · Cầu nối qua từng biểu cảm</span>
-            <span>
-              <ShieldCheck size={13} /> Thiết kế cùng sự tôn trọng
-            </span>
-          </footer>
+          {page !== 'conversation' && (
+            <footer className="page-footer">
+              <span>SignEmo · Cầu nối qua từng biểu cảm</span>
+              <span>
+                <ShieldCheck size={13} /> Thiết kế cùng sự tôn trọng
+              </span>
+            </footer>
+          )}
         </main>
       </div>
       {notice && (

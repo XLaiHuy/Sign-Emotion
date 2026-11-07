@@ -12,6 +12,8 @@ export const CaptionEntry = memo(function CaptionEntry({
   colors,
   signLanguageCues = true,
   signPhrase,
+  isSignActive = false,
+  turnNumber,
   onViewSign,
 }: {
   segment: TranscriptSegment;
@@ -19,6 +21,8 @@ export const CaptionEntry = memo(function CaptionEntry({
   colors: boolean;
   signLanguageCues?: boolean;
   signPhrase?: SignPhraseItem;
+  isSignActive?: boolean;
+  turnNumber?: number;
   onViewSign?: (phrase: SignPhraseItem) => void;
 }) {
   const label =
@@ -27,7 +31,7 @@ export const CaptionEntry = memo(function CaptionEntry({
 
   return (
     <div
-      className={`caption-entry${colors && ui ? ' caption-entry-accented' : ''}`}
+      className={`caption-entry${colors && ui ? ' caption-entry-accented' : ''}${isSignActive ? ' caption-entry-sign-active' : ''}`}
       style={
         colors && ui
           ? ({
@@ -38,20 +42,28 @@ export const CaptionEntry = memo(function CaptionEntry({
       }
     >
       <div className="caption-entry-header">
-        {ui && (
-          <small className="caption-context caption-emotion-badge">
-            <span aria-hidden="true">{ui.icon}</span> {ui.name} · gợi ý thử nghiệm cho đoạn này
-          </small>
-        )}
+        <div className="caption-entry-meta">
+          {typeof turnNumber === 'number' && (
+            <span className="caption-turn-badge" aria-hidden="true">
+              #{String(turnNumber).padStart(2, '0')}
+            </span>
+          )}
+          {ui && (
+            <small className="caption-context caption-emotion-badge">
+              <span aria-hidden="true">{ui.icon}</span> {ui.name} · gợi ý thử nghiệm cho đoạn này
+            </small>
+          )}
+        </div>
         {signLanguageCues && signPhrase && onViewSign && (
           <button
             type="button"
-            className="caption-sign-btn"
+            className={`caption-sign-btn${isSignActive ? ' caption-sign-btn-active' : ''}`}
             onClick={() => onViewSign(signPhrase)}
+            aria-pressed={isSignActive}
             aria-label={`Xem ký hiệu cho câu: ${segment.text}`}
           >
             <Hand size={16} />
-            <span>Xem ký hiệu</span>
+            <span>{isSignActive ? 'Đang chiếu ký hiệu ↗' : 'Xem ký hiệu'}</span>
           </button>
         )}
       </div>

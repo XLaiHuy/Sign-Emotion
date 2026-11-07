@@ -5,15 +5,22 @@ import { FaceIllustration } from '../src/features/conversation/FaceIllustration'
 vi.mock('../src/features/conversation/AvatarPanel', () => ({
   AvatarPanel: ({
     expression,
+    fallback,
     onReady,
     onUnavailable,
   }: {
     expression: string;
+    fallback?: React.ReactNode;
     onReady: () => void;
     onUnavailable: () => void;
   }) => {
     useEffect(onReady, [onReady]);
-    return <button onClick={onUnavailable}>GPU fixture {expression}</button>;
+    return (
+      <div>
+        <div data-testid="avatar-fallback-slot">{fallback}</div>
+        <button onClick={onUnavailable}>GPU fixture {expression}</button>
+      </div>
+    );
   },
 }));
 afterEach(() => {
@@ -56,4 +63,12 @@ it('falls back to 2D on overload or GPU error without another cue or inference',
   fireEvent.click(screen.getByRole('button', { name: 'GPU fixture happy' }));
   expect(screen.getByRole('img', { name: 'Minh họa Vui' })).toBeInTheDocument();
   expect(screen.getByText('Đang dùng hình 2D để giữ phụ đề hoạt động.')).toBeInTheDocument();
+});
+
+it('ensures the 3D fallback renders a bare face SVG with no redundant text container to prevent vertical text flash', () => {
+  render(<FaceIllustration {...props} />);
+  const fallbackSlot = screen.getByTestId('avatar-fallback-slot');
+  expect(fallbackSlot.querySelector('.expression-motion-bare')).not.toBeNull();
+  expect(fallbackSlot.querySelector('.sign-cue-label')).toBeNull();
+  expect(fallbackSlot.querySelector('svg.expression-motion-face')).not.toBeNull();
 });

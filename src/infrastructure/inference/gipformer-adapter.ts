@@ -1,4 +1,6 @@
 import type { AsrAdapter, AsrRequest } from '../../domain/asr';
+import { normalizeAsrPcm } from '../../domain/audio';
+import { sanitizeTranscript } from '../../domain/speechMetrics';
 import { GIPFORMER_MANIFEST } from './gipformer-assets';
 interface SherpaStream {
   acceptWaveform(rate: number, samples: Float32Array): void;
@@ -153,13 +155,15 @@ export class GipformerAdapter implements AsrAdapter {
     const start = performance.now(),
       stream = this.recognizer.createStream();
     try {
-      stream.acceptWaveform(16000, request.samples);
+      const normalizedSamples = normalizeAsrPcm(request.samples, request.gainNormalization);
+      stream.acceptWaveform(16000, normalizedSamples);
       this.recognizer.decode(stream);
+      const rawText = this.recognizer.getResult(stream).text;
       return {
         id: request.id,
         startMs: request.startMs,
         endMs: request.endMs,
-        text: this.recognizer.getResult(stream).text.trim(),
+        text: sanitizeTranscript(rawText),
         modelVersion: 'gipformer1.5-int8@sherpa-1.13.8',
         processingMs: performance.now() - start,
         finalizedAtMs: performance.now(),

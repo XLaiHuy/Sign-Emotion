@@ -26,7 +26,10 @@ export const faceScoreLabels: readonly (Expression | null)[] = [
 export type InferenceStatus = 'valid' | 'uncertain' | 'no-face' | 'multiple-faces' | 'poor-quality';
 export type HapticMode = 'auto' | 'visual' | 'off';
 export type CameraMirrorMode = 'auto' | 'mirror' | 'normal';
-export type ConversationAsrProfile = 'product' | 'moonshine-streaming-vi-research';
+export type ConversationAsrProfile =
+  | 'product'
+  | 'moonshine-streaming-vi-research'
+  | 'gipformer-research';
 export type QualityReason =
   | 'face-too-small'
   | 'face-outside'
@@ -47,6 +50,18 @@ export type DecisionReason =
   | 'stable-change'
   | 'auxiliary-uncertain'
   | 'stale-result';
+export type FaceExperiment =
+  'baseline' | 'eye-crop' | 'low-light' | 'detector-050' | 'expression-050';
+/** Ephemeral worker/UI diagnostics only; never part of reports, vault or audit. */
+export interface FaceImageDiagnostics {
+  inputSize: number;
+  preprocessingVersion: string;
+  experiment: FaceExperiment;
+  gammaApplied: boolean;
+  brightness?: number;
+  contrast?: number;
+  sharpness?: number;
+}
 export interface InferenceResult {
   timestamp: number;
   /** Main-thread time spent capturing this frame, when available. */
@@ -61,6 +76,7 @@ export interface InferenceResult {
   processingMs: number;
   scores: number[];
   qualityReason?: QualityReason;
+  imageDiagnostics?: FaceImageDiagnostics;
   /** Mild blur only; severe image/geometry failures remain unusable. */
   qualityWarning?: 'blurred';
   /** A usable measurement is independent of whether its displayed label has stabilized. */
@@ -116,14 +132,16 @@ export const defaultSettings: Settings = {
 };
 export const settingsSchema = z
   .object({
-    threshold: z.number().min(0.5).max(0.95),
+    threshold: z.number().min(0.35).max(0.95),
     dwellMs: z.number().min(100).max(1500),
     cooldownMs: z.number().min(3000).max(10000),
     haptics: z.boolean(),
     hapticMode: z.enum(['auto', 'visual', 'off']).optional(),
     soundFeedback: z.boolean().default(false),
     cameraMirror: z.enum(['auto', 'mirror', 'normal']).default('auto'),
-    asrProfile: z.enum(['product', 'moonshine-streaming-vi-research']).default('product'),
+    asrProfile: z
+      .enum(['product', 'moonshine-streaming-vi-research', 'gipformer-research'])
+      .default('product'),
     captionColors: z.boolean().default(true),
     expressionAvatar: z.boolean().default(true),
     signLanguageCues: z.boolean().default(true),

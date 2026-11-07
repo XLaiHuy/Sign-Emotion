@@ -39,7 +39,7 @@ export class MicrophoneCapture {
           channelCount: 1,
           echoCancellation: true,
           noiseSuppression: true,
-          autoGainControl: false,
+          autoGainControl: true,
         },
       }));
     if (generation !== this.generation) {

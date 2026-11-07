@@ -46,11 +46,13 @@ export function ExpressionMotion({
   active,
   cue,
   reduced,
+  bare = false,
 }: {
   label: Expression | null;
   active: boolean;
   cue: FaceCue | null;
   reduced: boolean;
+  bare?: boolean;
 }) {
   const [visible, setVisible] = useState(!document.hidden);
   const [replay, setReplay] = useState(0);
@@ -73,53 +75,62 @@ export function ExpressionMotion({
     !reduced &&
     (replay || (cue?.label === current && performance.now() - cue.timestamp <= 3000)),
   );
+  const faceSvg = (
+    <svg
+      key={`${current}-${cue?.id}-${replay}-${animate}`}
+      viewBox="0 0 100 100"
+      preserveAspectRatio="xMidYMid meet"
+      className={`expression-motion-face${animate ? ' expression-motion-once' : ''}`}
+      role="img"
+      aria-label={current ? `Minh họa ${expressionUI[current].name}` : 'Chưa có biểu cảm rõ'}
+    >
+      <circle cx="50" cy="50" r="43" fill="#edf1e9" stroke="currentColor" strokeWidth="2" />
+      <g
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="3"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        {(['left', 'right', 'mouth'] as const).map((part) => (
+          <path key={part} d={pose[part]}>
+            {animate && (
+              <animate
+                attributeName="d"
+                from={poses.neutral[part]}
+                to={pose[part]}
+                dur="0.45s"
+                repeatCount="1"
+                fill="freeze"
+              />
+            )}
+          </path>
+        ))}
+      </g>
+      <g fill="currentColor">
+        <ellipse
+          cx="35"
+          cy="46"
+          rx="3"
+          ry={current === 'fear' || current === 'surprised' ? 5 : 3}
+        />
+        <ellipse
+          cx="65"
+          cy="46"
+          rx="3"
+          ry={current === 'fear' || current === 'surprised' ? 5 : 3}
+        />
+      </g>
+    </svg>
+  );
+
+  if (bare) {
+    return <div className="expression-motion expression-motion-bare">{faceSvg}</div>;
+  }
+
   return (
     <div className="expression-motion">
-      <svg
-        key={`${current}-${cue?.id}-${replay}-${animate}`}
-        viewBox="0 0 100 100"
-        className={`expression-motion-face${animate ? ' expression-motion-once' : ''}`}
-        role="img"
-        aria-label={current ? `Minh họa ${expressionUI[current].name}` : 'Chưa có biểu cảm rõ'}
-      >
-        <circle cx="50" cy="50" r="43" fill="#edf1e9" stroke="currentColor" strokeWidth="2" />
-        <g
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="3"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          {(['left', 'right', 'mouth'] as const).map((part) => (
-            <path key={part} d={pose[part]}>
-              {animate && (
-                <animate
-                  attributeName="d"
-                  from={poses.neutral[part]}
-                  to={pose[part]}
-                  dur="0.45s"
-                  repeatCount="1"
-                  fill="freeze"
-                />
-              )}
-            </path>
-          ))}
-        </g>
-        <g fill="currentColor">
-          <ellipse
-            cx="35"
-            cy="46"
-            rx="3"
-            ry={current === 'fear' || current === 'surprised' ? 5 : 3}
-          />
-          <ellipse
-            cx="65"
-            cy="46"
-            rx="3"
-            ry={current === 'fear' || current === 'surprised' ? 5 : 3}
-          />
-        </g>
-      </svg>
+      {faceSvg}
       <div>
         <p className="sign-cue-label">
           {current ? `Nét mặt: ${expressionUI[current].name}` : 'Chưa có biểu cảm rõ'}

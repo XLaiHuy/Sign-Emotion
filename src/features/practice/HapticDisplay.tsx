@@ -21,16 +21,32 @@ export function HapticDisplay({
         className={`pulse-orb ${visual.active ? 'on' : ''}`}
         aria-label={visual.active ? 'Nhịp đang bật' : 'Nhịp đang nghỉ'}
       >
-        〰
+        <span className="pulse-orb-ring" aria-hidden="true" />
+        <span className="pulse-orb-glyph" aria-hidden="true">
+          〰
+        </span>
       </div>
-      <div className="rhythm-track" aria-hidden="true">
-        {visual.pattern.map((duration, i) => (
-          <span
-            key={i}
-            className={`${i % 2 ? 'rest' : 'beat'} ${visual.index === i ? 'current' : ''}`}
-            style={{ flex: duration }}
-          />
-        ))}
+      <div
+        className={`rhythm-track${!visual.pattern.length ? ' rhythm-track-idle' : ''}`}
+        aria-hidden="true"
+      >
+        {visual.pattern.length ? (
+          visual.pattern.map((duration, i) => (
+            <span
+              key={i}
+              className={`${i % 2 ? 'rest' : 'beat'} ${visual.index === i ? 'current' : ''}`}
+              style={{ flex: duration }}
+            />
+          ))
+        ) : (
+          <>
+            <span className="beat idle-node" style={{ flex: 1 }} />
+            <span className="rest idle-node" style={{ flex: 0.6 }} />
+            <span className="beat idle-node" style={{ flex: 2.2 }} />
+            <span className="rest idle-node" style={{ flex: 0.6 }} />
+            <span className="beat idle-node" style={{ flex: 1 }} />
+          </>
+        )}
       </div>
       <small aria-live="polite">
         {visual.playing

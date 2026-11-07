@@ -49,7 +49,10 @@ beforeEach(() => {
   ReadyWorker.created = 0;
   vi.stubGlobal('Worker', ReadyWorker);
 });
-afterEach(() => vi.unstubAllGlobals());
+afterEach(() => {
+  vi.unstubAllGlobals();
+  vi.unstubAllEnvs();
+});
 describe('consent and navigation', () => {
   it('recovers a waiting PWA update discovered before React subscribes without activating it', async () => {
     const descriptor = Object.getOwnPropertyDescriptor(navigator, 'serviceWorker');

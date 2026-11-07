@@ -215,16 +215,19 @@ export class FaceInferenceBudget {
     oldestFinalWaitMs = 0,
   ) {
     const interval = [200, 500, 1000][this.level];
-    const overloaded =
-      pendingAsr >= 2 || oldestFinalWaitMs >= 1000 || faceServiceMs > interval * 0.9;
+    const speechBackedUp = pendingAsr >= 2 || oldestFinalWaitMs >= 1000;
+    const faceLimitMs =
+      speechBackedUp || rtf >= 0.7 ? interval * 0.9 : Math.max(interval * 0.9, 650);
+    const overloaded = speechBackedUp || faceServiceMs > faceLimitMs;
     if (overloaded) {
       this.pressureSince ??= nowMs;
       if (nowMs - this.pressureSince >= 2000) {
-        this.level = Math.min(2, this.level + 1) as 0 | 1 | 2;
+        const maxLevel = speechBackedUp || faceServiceMs > 900 ? 2 : 1;
+        this.level = Math.min(maxLevel, this.level + 1) as 0 | 1 | 2;
         this.pressureSince = nowMs;
       }
       this.healthySince = null;
-    } else if (pendingAsr === 0 && rtf < 0.6 && faceServiceMs < [200, 200, 500][this.level] * 0.8) {
+    } else if (pendingAsr === 0 && rtf < 0.6 && faceServiceMs < [500, 500, 750][this.level]) {
       this.pressureSince = null;
       this.healthySince ??= nowMs;
       if (nowMs - this.healthySince >= 10_000) {

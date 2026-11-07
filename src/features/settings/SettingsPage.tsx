@@ -84,7 +84,7 @@ export function SettingsPage({
             Độ chọn lọc gợi ý biểu cảm <strong>{Math.round(settings.threshold * 100)}%</strong>
             <input
               type="range"
-              min="0.5"
+              min="0.35"
               max="0.95"
               step="0.05"
               value={settings.threshold}

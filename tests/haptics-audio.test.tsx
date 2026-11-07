@@ -8,7 +8,12 @@ class FakeAudioContext {
   currentTime = 0;
   state: AudioContextState = 'running';
   destination = {} as AudioDestinationNode;
-  oscillators: { start: ReturnType<typeof vi.fn>; stop: ReturnType<typeof vi.fn> }[] = [];
+  oscillators: {
+    type: string;
+    frequency: { value: number };
+    start: ReturnType<typeof vi.fn>;
+    stop: ReturnType<typeof vi.fn>;
+  }[] = [];
   constructor() {
     FakeAudioContext.instance = this;
   }
@@ -173,5 +178,32 @@ describe('PC rhythm fallback', () => {
     });
 
     expect(vibrate).not.toHaveBeenCalled();
+  });
+
+  it('produces distinct acoustic characteristics per emotion', async () => {
+    vi.useFakeTimers();
+    vi.stubGlobal('AudioContext', FakeAudioContext);
+    const { result } = renderHook(() => useHaptics('auto', true));
+    await act(async () => {
+      await result.current.unlock();
+    });
+
+    // Test happy tone
+    act(() => {
+      result.current.play('happy');
+      vi.advanceTimersByTime(0);
+    });
+    const happyOsc = FakeAudioContext.instance?.oscillators.at(-1);
+    expect(happyOsc?.type).toBe('triangle');
+    expect(happyOsc?.frequency.value).toBe(523.25);
+
+    // Test angry tone
+    act(() => {
+      result.current.play('angry');
+      vi.advanceTimersByTime(0);
+    });
+    const angryOsc = FakeAudioContext.instance?.oscillators.at(-1);
+    expect(angryOsc?.type).toBe('sawtooth');
+    expect(angryOsc?.frequency.value).toBe(196.0);
   });
 });

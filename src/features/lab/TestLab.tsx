@@ -7,6 +7,7 @@ import {
   type CalibrationProfile,
   type InferenceResult,
   type Settings,
+  type FaceExperiment,
 } from '../../shared/contracts';
 import {
   FEATURE_NAMES,
@@ -26,7 +27,8 @@ import {
 } from '../../domain/evaluation';
 import { PredictionGate, emptyResult } from '../../domain/face/prediction';
 import { InferenceClient, seekVideo } from '../../infrastructure/inference/videoInference';
-import { Diagnostics, resultExplanation } from '../face/Diagnostics';
+import { FaceObservation } from '../face/FaceObservation';
+import { faceExperimentConfig, localFaceLab } from '../../domain/face/experiments';
 import { SynchronizedVideoTest } from './SynchronizedVideoTest';
 import {
   compareVideoFaces,
@@ -57,6 +59,18 @@ export function TestLab({
   onCandidate: (v: AuxiliaryArtifact | null) => void;
 }) {
   const [faceComparison, setFaceComparison] = useState<FaceComparisonResult[]>([]);
+  const [experimentEnabled, setExperimentEnabled] = useState(false);
+  const [experiment, setExperiment] = useState<FaceExperiment>('baseline');
+  const localLab = localFaceLab(location.hostname);
+  const experimenting = localLab && experimentEnabled;
+  const experimentConfig = faceExperimentConfig(
+    experimenting ? experiment : undefined,
+    true,
+    location.hostname,
+  );
+  const gateSettings = experimenting
+    ? { ...settings, threshold: experimentConfig.expressionThreshold }
+    : settings;
   const [comparingProfile, setComparingProfile] = useState('');
   const video = useRef<HTMLVideoElement>(null),
     client = useRef<InferenceClient | null>(null),
@@ -82,6 +96,7 @@ export function TestLab({
     [candidate, setCandidate] = useState<AuxiliaryArtifact | null>(null),
     [useCandidate, setUseCandidate] = useState(false),
     [profile, setProfile] = useState<CalibrationProfile | undefined>();
+  const gateProfile = experimenting ? undefined : profile;
   const [research, setResearch] = useState(false),
     [participant, setParticipant] = useState(''),
     [split, setSplit] = useState<'train' | 'validation' | 'test'>('train'),
@@ -112,7 +127,11 @@ export function TestLab({
   useEffect(() => {
     stopRef.current();
     setFaceComparison([]);
-  }, [settings, candidate, useCandidate, profile]);
+    rowsRef.current = [];
+    features.current = [];
+    researchSnapshot.current = null;
+    setRows([]);
+  }, [settings, candidate, useCandidate, profile, experimentEnabled, experiment]);
   useEffect(() => setFaceComparison([]), [segments]);
   useEffect(() => {
     const hide = () => {
@@ -129,13 +148,18 @@ export function TestLab({
     };
   }, []);
   const getClient = () => {
-    client.current ??= new InferenceClient(useCandidate && candidate ? candidate : undefined, true);
+    client.current ??= new InferenceClient(
+      !experimenting && useCandidate && candidate ? candidate : undefined,
+      true,
+      'product',
+      experimenting ? experiment : undefined,
+    );
     return client.current;
   };
   const preview = async () => {
     if (batch.current) return;
     const token = ++generation.current;
-    gate.current = new PredictionGate(settings, profile);
+    gate.current = new PredictionGate(gateSettings, gateProfile);
     setState('preview');
     try {
       const engine = getClient();
@@ -196,7 +220,7 @@ export function TestLab({
     rowsRef.current = [];
     features.current = [];
     setRows([]);
-    gate.current = new PredictionGate(settings, profile);
+    gate.current = new PredictionGate(gateSettings, gateProfile);
     researchSnapshot.current = research
       ? {
           participantId: participant,
@@ -400,6 +424,37 @@ export function TestLab({
         <div className="lab-grid">
           <section className="card settings-card">
             <h2>Video cục bộ</h2>
+            {localLab && (
+              <>
+                <label className="checkbox-label">
+                  <input
+                    type="checkbox"
+                    checked={experimentEnabled}
+                    onChange={(e) => setExperimentEnabled(e.target.checked)}
+                  />
+                  Thử tiền xử lý B2 trên localhost
+                </label>
+                {experimentEnabled && (
+                  <label className="field">
+                    Cấu hình cho lượt này
+                    <select
+                      value={experiment}
+                      onChange={(e) => setExperiment(e.target.value as FaceExperiment)}
+                    >
+                      <option value="baseline">Baseline · detector 0,60 · biểu cảm 0,55</option>
+                      <option value="eye-crop">Chỉ đổi crop căn hai mắt</option>
+                      <option value="low-light">Chỉ bù sáng gamma 0,85</option>
+                      <option value="detector-050">Chỉ giảm detector xuống 0,50</option>
+                      <option value="expression-050">Chỉ giảm ngưỡng biểu cảm xuống 0,50</option>
+                    </select>
+                    <span>
+                      Không lưu lựa chọn. Dùng B2, bỏ qua model phụ và hồ sơ hiệu chỉnh trong lượt
+                      thử. Giữ nguyên EMA, dwell và cooldown. Chưa có bằng chứng tăng độ chính xác.
+                    </span>
+                  </label>
+                )}
+              </>
+            )}
             <label className="field">
               Chọn MP4/WebM
               <input
@@ -464,7 +519,7 @@ export function TestLab({
               </button>
               <button
                 className="button secondary"
-                disabled={!duration || busy || state === 'preview'}
+                disabled={!duration || busy || state === 'preview' || experimenting}
                 onClick={() => void compareFaces()}
               >
                 So sánh các cấu hình mặt đã đóng gói
@@ -545,8 +600,7 @@ export function TestLab({
               · {rows.length} mẫu
             </p>
             <h3>{result.label ? expressionUI[result.label].description : 'Chưa xác định'}</h3>
-            <p>{resultExplanation(result)}</p>
-            <Diagnostics result={result} />
+            <FaceObservation key={generation.current} result={result} active={state !== 'idle'} />
           </section>
           <section className="card settings-card">
             <h2>Nhãn theo từng đoạn</h2>
@@ -694,11 +748,12 @@ export function TestLab({
                 downloadJson('signemo-evaluation.json', {
                   schemaVersion: 1,
                   modelVersion:
-                    useCandidate && candidate
+                    !experimenting && useCandidate && candidate
                       ? `${MODEL_VERSION}+${candidate.manifest.version}`
                       : MODEL_VERSION,
-                  settings,
-                  profile,
+                  settings: gateSettings,
+                  profile: gateProfile,
+                  ...(experimenting ? { faceExperiment: experimentConfig } : {}),
                   segments,
                   summary,
                   rows: rows.map((r) => ({ ...r, trueLabel: referenceAt(r.timeMs, segments) })),

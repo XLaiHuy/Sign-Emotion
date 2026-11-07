@@ -1,4 +1,4 @@
-import { useState, useMemo, memo } from 'react';
+import { useState, useMemo, useEffect, useRef, memo } from 'react';
 import {
   ChevronDown,
   ChevronUp,
@@ -17,17 +17,54 @@ import {
 export interface QuickPhrasePickerProps {
   onSelectPhrase: (text: string) => void;
   available?: readonly SignPhraseItem[];
+  activePhraseId?: string;
+  activeSelectionKey?: string;
+  activePhraseText?: string;
 }
+
+const FEATURED_SCENARIO_IDS = ['SENT001', 'SENT003', 'SENT064', 'SENT020', 'SENT098'] as const;
 
 export const QuickPhrasePicker = memo(function QuickPhrasePicker({
   onSelectPhrase,
   available = [],
+  activePhraseId,
+  activeSelectionKey,
+  activePhraseText,
 }: QuickPhrasePickerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'all' | 'communication' | 'health' | 'daily'>(
     'communication',
   );
   const [searchQuery, setSearchQuery] = useState('');
+  const prevSelectionKey = useRef<string | undefined>(activeSelectionKey);
+
+  // Auto-close the 100-phrase overlay whenever a new spoken or clicked sign starts playing
+  // so the VSL video stage underneath is never occluded.
+  useEffect(() => {
+    if (activeSelectionKey && activeSelectionKey !== prevSelectionKey.current) {
+      setIsOpen(false);
+    }
+    prevSelectionKey.current = activeSelectionKey;
+  }, [activeSelectionKey]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, [isOpen]);
+
+  const featuredPhrases = useMemo(
+    () =>
+      FEATURED_SCENARIO_IDS.map((id) =>
+        signPhrases100Catalogue.find((item) => item.id === id),
+      ).filter((item): item is SignPhraseItem => Boolean(item)),
+    [],
+  );
 
   const filtered = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
@@ -44,6 +81,23 @@ export const QuickPhrasePicker = memo(function QuickPhrasePicker({
 
   return (
     <div className="quick-phrase-picker">
+      {!isOpen && featuredPhrases.length > 0 && (
+        <div className="quick-scenario-strip" aria-label="Câu mẫu thử nhanh">
+          <small className="quick-scenario-label">Thử nhanh mẫu câu ký hiệu:</small>
+          <div className="quick-scenario-chips">
+            {featuredPhrases.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                className={`quick-scenario-chip${activePhraseId === item.id ? ' active' : ''}`}
+                onClick={() => onSelectPhrase(item.text)}
+              >
+                {item.text}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
       <button
         type="button"
         className="quick-phrase-toggle"
@@ -58,6 +112,44 @@ export const QuickPhrasePicker = memo(function QuickPhrasePicker({
       {isOpen && (
         <div className="quick-phrase-content">
           <div
+            className="quick-phrase-overlay-header"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: 8,
+              marginBottom: 10,
+            }}
+          >
+            <span style={{ fontSize: '12.5px', fontWeight: 600, color: '#cbd5e1' }}>
+              {activePhraseText
+                ? `Đang có video ký hiệu: “${activePhraseText}”`
+                : 'Chọn mẫu câu để chiếu video ký hiệu'}
+            </span>
+            <button
+              type="button"
+              onClick={() => setIsOpen(false)}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 4,
+                padding: '4px 10px',
+                borderRadius: '8px',
+                border: '1px solid rgba(52, 211, 153, 0.45)',
+                background: 'rgba(16, 185, 129, 0.16)',
+                color: '#34d399',
+                fontSize: '12px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                flexShrink: 0,
+              }}
+              aria-label="Đóng danh mục mẫu câu"
+            >
+              <X size={14} />
+              <span>{activePhraseText ? 'Xem video ký hiệu' : 'Thu gọn'}</span>
+            </button>
+          </div>
+          <div
             className="quick-phrase-search-bar"
             style={{
               display: 'flex',
@@ -69,7 +161,7 @@ export const QuickPhrasePicker = memo(function QuickPhrasePicker({
           >
             <Search
               size={16}
-              style={{ position: 'absolute', left: 10, color: 'var(--text-secondary, #666)' }}
+              style={{ position: 'absolute', left: 10, color: 'var(--text-secondary, #94a3b8)' }}
             />
             <input
               type="text"
@@ -81,8 +173,9 @@ export const QuickPhrasePicker = memo(function QuickPhrasePicker({
                 width: '100%',
                 padding: '8px 32px 8px 34px',
                 borderRadius: '8px',
-                border: '1px solid var(--border-color, #e0e0e0)',
-                background: 'var(--bg-input, #fff)',
+                border: '1px solid rgba(51, 65, 85, 0.85)',
+                background: 'rgba(15, 23, 42, 0.92)',
+                color: '#f8fafc',
                 fontSize: '13px',
               }}
             />
@@ -159,7 +252,10 @@ export const QuickPhrasePicker = memo(function QuickPhrasePicker({
                   key={item.id}
                   type="button"
                   className="quick-phrase-chip"
-                  onClick={() => onSelectPhrase(item.text)}
+                  onClick={() => {
+                    onSelectPhrase(item.text);
+                    setIsOpen(false);
+                  }}
                   title={
                     available.some((p) => p.id === item.id)
                       ? 'Xem video mẫu ký hiệu'

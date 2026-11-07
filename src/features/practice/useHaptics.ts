@@ -83,26 +83,83 @@ export function useHaptics(mode: HapticMode, soundFeedback = false) {
     if (context && context.state !== 'closed') void context.close().catch(() => {});
   }, [cancel]);
 
-  const tone = useCallback((context: AudioContext, durationMs: number) => {
-    const oscillator = context.createOscillator();
-    const gain = context.createGain();
-    const start = context.currentTime;
-    const length = durationMs / 1000;
-    oscillator.type = 'sine';
-    oscillator.frequency.value = 520;
-    gain.gain.setValueAtTime(0.0001, start);
-    gain.gain.exponentialRampToValueAtTime(0.045, start + 0.015);
-    gain.gain.exponentialRampToValueAtTime(0.0001, start + length);
-    oscillator.connect(gain).connect(context.destination);
-    oscillators.current.add(oscillator);
-    oscillator.onended = () => {
-      oscillators.current.delete(oscillator);
-      oscillator.disconnect();
-      gain.disconnect();
-    };
-    oscillator.start(start);
-    oscillator.stop(start + length);
-  }, []);
+  const tone = useCallback(
+    (
+      context: AudioContext,
+      durationMs: number,
+      label: Expression = 'happy',
+      pulseIndex = 0,
+    ) => {
+      if (label === 'neutral') return;
+      const oscillator = context.createOscillator();
+      const gain = context.createGain();
+      const start = context.currentTime;
+      const length = durationMs / 1000;
+      const peakGain = 0.18;
+
+      let type: OscillatorType = 'sine';
+      let freq = 520;
+      let targetFreq: number | null = null;
+
+      switch (label) {
+        case 'happy':
+          type = 'triangle';
+          freq = 523.25;
+          targetFreq = 659.25;
+          break;
+        case 'sad':
+          type = 'sine';
+          freq = pulseIndex === 0 ? 392.0 : 329.63;
+          targetFreq = pulseIndex === 0 ? 349.23 : 293.66;
+          break;
+        case 'angry':
+          type = 'sawtooth';
+          freq = 196.0;
+          break;
+        case 'surprised':
+          type = 'sine';
+          freq = 587.33;
+          targetFreq = 880.0;
+          break;
+        case 'fear':
+          type = 'sine';
+          freq = pulseIndex % 4 === 0 ? 784.0 : 830.61;
+          break;
+        case 'disgust':
+          type = 'triangle';
+          freq = 260.0;
+          targetFreq = 210.0;
+          break;
+      }
+
+      oscillator.type = type;
+      if (typeof oscillator.frequency.setValueAtTime === 'function') {
+        oscillator.frequency.setValueAtTime(freq, start);
+        if (
+          targetFreq !== null &&
+          typeof oscillator.frequency.exponentialRampToValueAtTime === 'function'
+        ) {
+          oscillator.frequency.exponentialRampToValueAtTime(targetFreq, start + length);
+        }
+      } else {
+        oscillator.frequency.value = freq;
+      }
+
+      gain.gain.setValueAtTime(0.0001, start);
+      gain.gain.exponentialRampToValueAtTime(peakGain, start + 0.015);
+      gain.gain.exponentialRampToValueAtTime(0.0001, start + length);
+      oscillator.connect(gain).connect(context.destination);
+      oscillators.current.add(oscillator);
+      oscillator.onended = () => {
+        oscillators.current.delete(oscillator);
+        oscillator.disconnect();
+        gain.disconnect();
+      };
+      oscillator.start(start);
+      oscillator.stop(start + length);
+    },
+    [],
+  );
 
   const play = useCallback(
     (label: Expression, reason: HapticEvent['reason'] = 'stable-change'): HapticEvent | null => {
@@ -150,7 +207,9 @@ export function useHaptics(mode: HapticMode, soundFeedback = false) {
               apiAccepted,
               output,
             });
-            if (index % 2 === 0 && output === 'audio' && context) tone(context, duration);
+            if (index % 2 === 0 && output === 'audio' && context) {
+              tone(context, duration, label, index);
+            }
           }, at),
         );
         at += duration;
@@ -187,18 +246,21 @@ export function useHaptics(mode: HapticMode, soundFeedback = false) {
     else cancel();
   }, [cancel, release, mode, soundFeedback]);
 
-  const testSound = useCallback(async () => {
-    const generation = playbackGeneration.current;
-    if (
-      !(await unlock()) ||
-      document.hidden ||
-      !mounted.current ||
-      generation !== playbackGeneration.current
-    )
-      return;
-    cancel();
-    if (audio.current?.state === 'running') tone(audio.current, 160);
-  }, [cancel, tone, unlock]);
+  const testSound = useCallback(
+    async (testLabel: Expression = 'happy') => {
+      const generation = playbackGeneration.current;
+      if (
+        !(await unlock()) ||
+        document.hidden ||
+        !mounted.current ||
+        generation !== playbackGeneration.current
+      )
+        return;
+      cancel();
+      if (audio.current?.state === 'running') tone(audio.current, 160, testLabel, 0);
+    },
+    [cancel, tone, unlock],
+  );
 
   const playFromGesture = useCallback(
     async (label: Expression, reason: HapticEvent['reason'] = 'practice') => {

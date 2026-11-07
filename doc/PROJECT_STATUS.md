@@ -1,5 +1,9 @@
 # Trạng thái và quyết định SignEmo
 
+## Diagnostics webcam và thử nghiệm B2 local — 22/10/2026
+
+Đã thêm hướng dẫn nguyên nhân “chưa rõ” cạnh camera, số đo chất lượng/góc/latency và bộ đếm theo lý do chỉ trong RAM. Lab localhost có baseline/crop hai mắt/gamma/detector 0,50/ngưỡng 0,50; mặc định tắt, không lưu Settings, worker từ chối các thử nghiệm trên public. Mỗi lượt chỉ đổi một yếu tố; model phụ/hiệu chỉnh riêng được bỏ qua trong lượt thử. Production giữ nguyên crop/ngưỡng mặc định và bộ lọc EMA/dwell/cooldown. Regression/build/format qua; parity tensor baseline qua, chi phí p95 tổng hợp tăng tối đa 2 ms. Production UI desktop/mobile, năm worker mặt offline và reload PWA offline/warmup ASR-face đã qua bằng fixture/capture tổng hợp; 40 mục AI đúng SHA trước lượt offline cuối. Chưa có bằng chứng tăng accuracy hoặc dữ liệu nhãn tách người/phiên để chọn cấu hình public. Bằng chứng và giới hạn ở `FACE_CAMERA_LAB_20261022.md` và `VERIFICATION.md`; chưa push/deploy lượt này.
+
 ## Sửa đóng gói Vercel — 22/10/2026
 
 Tái hiện HTTP 404 model/runtime trên `sign-emotion.vercel.app`: manifest có nhưng build thiếu bước tạo tài nguyên bị Git ignore. `build:vercel` chuẩn bị/checksum trước build và tạo đủ 40 URL checksum; lỗi thiếu file máy chủ có mã riêng. Queue tối đa hai file với budget 48 MiB, model lớn tải riêng; không đổi trọng số hoặc tổng 324 MiB. Production preview đủ cache và reload offline qua. Kiểm tra lại trước push: **303/303 test**, lint/typecheck/checksum/build/format qua; đã sửa các lỗi ký hiệu/phủ định và fixture test được phát hiện. Clean Linux Docker image `signemo:model-download-20261022` healthy, HTTP/runtime 200; không đổi container có sẵn. Chi tiết và giới hạn đo/deploy ở `VERIFICATION.md`, cách triển khai ở `DEPLOYMENT.md`; chưa nghiệm thu phần cứng/Android.

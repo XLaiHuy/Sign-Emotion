@@ -10,7 +10,15 @@ const mocks = vi.hoisted(() => {
     faceCallback: null as ((label: string) => unknown) | null,
     camera: {
       videoRef: { current: null },
-      result: { status: 'valid', label: 'happy', scores: [], timestamp: 4000 },
+      result: {
+        status: 'valid',
+        label: 'happy',
+        scores: [],
+        timestamp: 4000,
+        score: 0.9,
+        modelVersion: 'test',
+        processingMs: 1,
+      },
       state: 'running',
       error: '',
       switching: false,

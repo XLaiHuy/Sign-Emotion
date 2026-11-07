@@ -9,8 +9,9 @@ import {
   Volume2,
   VolumeX,
 } from 'lucide-react';
-import type { Settings } from '../../shared/contracts';
+import type { Expression, Settings } from '../../shared/contracts';
 import { expressionUI } from '../../shared/contracts';
+import { emotionSurfaces } from '../../shared/ui/emotionAppearance';
 import { PageTitle } from '../../shared/ui/PageTitle';
 import { useCamera } from '../../infrastructure/media/useCamera';
 import { conversationProfile } from '../../infrastructure/inference/conversationProfile';
@@ -28,7 +29,7 @@ import { useSignPlayback } from './useSignPlayback';
 import { findPlayableSignPhrase } from '../../domain/signPhrases';
 import { ConversationSaveControl } from './ConversationSaveControl';
 import type { useVault } from '../history/useVault';
-import { resultExplanation } from '../face/Diagnostics';
+import { FaceObservation } from '../face/FaceObservation';
 import { auditMessage } from '../../domain/audit';
 import {
   retryModelPreparation,
@@ -152,6 +153,10 @@ export function ConversationPage({
   const [facing, setFacing] = useState<'user' | 'environment'>('user');
   const [mirrorMode, setMirrorMode] = useState(settings.cameraMirror);
   const [faceIntervalMs, setFaceIntervalMs] = useState(200);
+  const [previewEmotion, setPreviewEmotion] = useState<{
+    label: Exclude<Expression, 'neutral'>;
+    seq: number;
+  } | null>(null);
   const [noiseSuppression, setNoiseSuppression] = useState<ConstraintStatus>('unknown');
   const [echoCancellation, setEchoCancellation] = useState<ConstraintStatus>('unknown');
   const requestGeneration = useRef(0);
@@ -180,9 +185,13 @@ export function ConversationPage({
     preparing,
     progress,
     detail: downloadDetail,
-    error: preparationError,
+    error: rawPreparationError,
     offline,
   } = preparation;
+  const preparationError =
+    rawPreparationError && !/signal is aborted|AbortError/i.test(rawPreparationError)
+      ? rawPreparationError
+      : '';
   const haptics = useHaptics(
     settings.hapticMode ?? (settings.haptics ? 'auto' : 'off'),
     soundFeedback,
@@ -221,6 +230,24 @@ export function ConversationPage({
     new URLSearchParams(location.search).has('diagnostics');
   const previousConversationState = useRef(conversation.state);
   const [toneEnabled, setToneEnabled] = useState(false);
+  const isLocalhost =
+    window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+  const isLiveLocalhost = isLocalhost && import.meta.env.MODE !== 'test';
+  const [localAsrChoice, setLocalAsrChoice] = useState<Settings['asrProfile'] | null>(() => {
+    if (!isLiveLocalhost) return null;
+    try {
+      const saved = window.sessionStorage.getItem('signemo-local-asr-choice');
+      if (
+        saved === 'product' ||
+        saved === 'gipformer-research' ||
+        saved === 'moonshine-streaming-vi-research'
+      )
+        return saved;
+    } catch {
+      /* ignore storage errors */
+    }
+    return null;
+  });
   const isLocalMoonshineOrigin =
     ['localhost', '127.0.0.1', '[::1]'].includes(window.location.hostname) &&
     window.location.protocol.startsWith('http');
@@ -229,7 +256,12 @@ export function ConversationPage({
   const moonshineRuntimeCompatible = runtimeProfile.asr === 'moonshine-streaming-vi-research';
   const moonshineAvailable =
     isLocalMoonshineOrigin && window.crossOriginIsolated && moonshineRuntimeCompatible;
-  const requestedProfile = settings.asrProfile ?? 'product';
+  const requestedProfile = isLiveLocalhost
+    ? (localAsrChoice ??
+      (settings.asrProfile && settings.asrProfile !== 'product'
+        ? settings.asrProfile
+        : 'gipformer-research'))
+    : (settings.asrProfile ?? 'product');
   const activeAsrProfile =
     runtimeProfile.id === 'pc-candidate'
       ? runtimeProfile.asr === 'moonshine-streaming-vi-research' && !moonshineAvailable
@@ -237,7 +269,9 @@ export function ConversationPage({
         : runtimeProfile.asr
       : requestedProfile === 'moonshine-streaming-vi-research' && moonshineAvailable
         ? requestedProfile
-        : 'product';
+        : requestedProfile === 'gipformer-research' && isLocalhost
+          ? 'gipformer-research'
+          : 'product';
   const moonshineNeedsLocalMode =
     runtimeProfile.id === 'baseline' &&
     requestedProfile === 'moonshine-streaming-vi-research' &&
@@ -349,6 +383,19 @@ export function ConversationPage({
       setPhase('');
       const code = modelInitializationCode(reason);
       setFailedBranch(branch);
+      if (branch === 'speech' && activeAsrProfile === 'gipformer-research') {
+        setMessage('Không tải được gói Gipformer local. Đã chuyển về PhoWhisper mặc định.');
+        setLocalAsrChoice('product');
+        try {
+          window.sessionStorage.setItem('signemo-local-asr-choice', 'product');
+        } catch {
+          /* ignore storage errors */
+        }
+        changeSettings?.({ ...settings, asrProfile: 'product' });
+        setCoreWarmupFailed(false);
+        setWarmupAttempt((attempt) => attempt + 1);
+        return;
+      }
       if (autoFallbackGpu && branch === 'face' && code === 'gpu' && !compatibleFace) {
         emitAudit('ai-preparation-failed', {
           branch: 'face',
@@ -488,6 +535,11 @@ export function ConversationPage({
     emitAudit('sound-changed', { enabled: next.soundFeedback, branch: 'audio' });
     void saveSettings(next);
     window.dispatchEvent(new CustomEvent('signemo-settings-change', { detail: next }));
+    if (next.soundFeedback) {
+      void haptics.unlock().then((ready) => {
+        if (ready) void haptics.testSound(camera.result?.label ?? 'happy');
+      });
+    }
   };
   const cancelStart = (reason: 'user-canceled' | 'background' | 'pagehide' = 'user-canceled') => {
     const hasActiveAttempt =
@@ -615,7 +667,7 @@ export function ConversationPage({
           channelCount: 1,
           echoCancellation: true,
           noiseSuppression: true,
-          autoGainControl: false,
+          autoGainControl: true,
         },
         video: { facingMode: { ideal: 'user' }, width: { ideal: 640 }, height: { ideal: 480 } },
       });
@@ -763,25 +815,34 @@ export function ConversationPage({
   const latest = conversation.record?.decisions.findLast(
     (item) => item.segmentId === segments.at(-1)?.id,
   );
-  const faceSourceActive =
-    visible &&
-    conversation.state === 'running' &&
-    camera.state === 'running' &&
-    !camera.switching &&
-    camera.result.status === 'valid';
-  allowFaceCue.current =
-    visible && conversation.state === 'running' && camera.state === 'running' && !camera.switching;
-  useEffect(() => {
-    if (!faceSourceActive) {
-      setFaceCue(null);
-      haptics.cancel();
-    }
-  }, [faceSourceActive, haptics.cancel]);
   const faceDisplay = useFaceDisplay(
     camera.result,
     camera.state === 'running' && !camera.switching,
   );
   const faceLabel = faceDisplay.label;
+  const faceRuntimeActive =
+    visible && conversation.state === 'running' && camera.state === 'running' && !camera.switching;
+  const faceSourceActive =
+    faceRuntimeActive && (camera.result.status === 'valid' || faceDisplay.carrying);
+  allowFaceCue.current = faceRuntimeActive;
+  useEffect(() => {
+    if (faceSourceActive && faceLabel && faceLabel !== 'neutral') {
+      setPreviewEmotion(null);
+    }
+  }, [faceSourceActive, faceLabel]);
+  useEffect(() => {
+    if (!faceRuntimeActive || (!faceSourceActive && camera.result.status !== 'uncertain')) {
+      setFaceCue(null);
+      if (!previewEmotion) haptics.cancel();
+    }
+  }, [faceRuntimeActive, faceSourceActive, camera.result.status, haptics.cancel, previewEmotion]);
+  const effectiveFaceActive = faceSourceActive || Boolean(previewEmotion);
+  const effectiveFaceLabel = faceSourceActive ? faceLabel : (previewEmotion?.label ?? null);
+  const effectiveFaceCue: FaceCue | null = faceSourceActive
+    ? faceCue
+    : previewEmotion
+      ? { id: previewEmotion.seq, label: previewEmotion.label, timestamp: previewEmotion.seq }
+      : null;
   const rejectedText = conversation.evidence.find(
     (item) => item.source === 'text' && item.quality === 'rejected',
   );
@@ -810,17 +871,79 @@ export function ConversationPage({
   };
 
   const cameraEmotionColor =
-    settings.captionColors !== false && faceSourceActive && faceLabel
-      ? expressionUI[faceLabel].color
+    settings.captionColors !== false && effectiveFaceActive && effectiveFaceLabel
+      ? expressionUI[effectiveFaceLabel].color
       : undefined;
+
+  const selectScenarioPhrase = (text: string) => {
+    const phrase = findPlayableSignPhrase(text, availableSigns);
+    if (phrase) {
+      setSampleNotice('');
+      signs.select(phrase);
+    } else {
+      signs.clear();
+      setSampleNotice(`Chưa có mẫu ký hiệu cho câu “${text}”`);
+    }
+  };
 
   return (
     <>
-      <PageTitle
-        eyebrow="SIGNEMO · HỘI THOẠI"
-        title="Ở đây, mình hiểu nhau."
-        subtitle="Lời nói thành phụ đề. Mọi xử lý diễn ra trên thiết bị."
-      />
+      <div className="conversation-top-bar">
+        <PageTitle
+          eyebrow="SIGNEMO · HỘI THOẠI"
+          title="Ở đây, mình hiểu nhau."
+          subtitle="Lời nói thành phụ đề. Mọi xử lý diễn ra trên thiết bị."
+        />
+        <div className="multimodal-deck" aria-label="Trạm đồng hành đa phương thức">
+          <div className={`multimodal-node${running ? ' is-live' : ''}`}>
+            <span className="multimodal-node-kicker">KÊNH 01 · THÍNH GIÁC AI</span>
+            <strong>
+              <span className="multimodal-pulse" aria-hidden="true" />
+              {running ? 'Đang lắng nghe trên thiết bị' : 'Phụ đề tiếng Việt cục bộ'}
+            </strong>
+            <small>
+              {segments.length
+                ? `Đã ghi nhận ${segments.length} lượt lời`
+                : activeAsrProfile === 'gipformer-research'
+                  ? 'Gipformer Tiếng Việt · Hiện chữ trực tiếp khi nói'
+                  : 'Đa luồng WASM · Không gửi âm thanh lên mây'}
+            </small>
+          </div>
+          <div
+            className={`multimodal-node${effectiveFaceActive && effectiveFaceLabel ? ' is-live' : ''}`}
+            style={
+              effectiveFaceActive && effectiveFaceLabel && settings.captionColors !== false
+                ? ({ '--node-accent': expressionUI[effectiveFaceLabel].color } as CSSProperties)
+                : undefined
+            }
+          >
+            <span className="multimodal-node-kicker">KÊNH 02 · KHUÔN MẶT QUẢ CẦU 3D</span>
+            <strong>
+              {effectiveFaceActive && effectiveFaceLabel
+                ? `${expressionUI[effectiveFaceLabel].icon} ${expressionUI[effectiveFaceLabel].name}${previewEmotion && !faceSourceActive ? ' (Mô phỏng)' : ''}`
+                : 'Khuôn mặt 3D · 7 sắc thái'}
+            </strong>
+            <small>
+              {previewEmotion && !faceSourceActive
+                ? 'Đang trình diễn biểu cảm mắt, mày, miệng 3D'
+                : 'Biểu cảm 3D mượt mà · Cộng hưởng giọng nói'}
+            </small>
+          </div>
+          <div className={`multimodal-node${signs.selection ? ' is-live' : ''}`}>
+            <span className="multimodal-node-kicker">KÊNH 03 · XÚC GIÁC &amp; VSL</span>
+            <strong>
+              {signs.selection
+                ? `🖐️ ${signs.selection.phrase.text}`
+                : `100 Mẫu Ký hiệu VSL · 6 Nhịp Morse`}
+            </strong>
+            <small>
+              {signs.selection
+                ? 'Đang phát video người thật trên Sân khấu Ký hiệu'
+                : 'Chạm câu mẫu hoặc phím sắc thái để trình diễn ngay'}
+            </small>
+          </div>
+        </div>
+      </div>
       {recoveryMode && (
         <div className="recovery-notice" role="status">
           Phiên trước bị gián đoạn — đang dùng chế độ nhẹ. Phụ đề và biểu cảm mặt vẫn hoạt động.
@@ -857,28 +980,6 @@ export function ConversationPage({
                     ? 'Hình ảnh được xử lý trên thiết bị'
                     : 'Camera đang tắt'}
               </span>
-              {camera.state === 'running' && (
-                <div className="video-controls">
-                  <button
-                    className="video-switch"
-                    type="button"
-                    disabled={camera.switching}
-                    onClick={() => void switchCamera()}
-                    aria-label="Đổi sang thiết bị camera khác"
-                  >
-                    <SwitchCamera size={18} /> Đổi camera
-                  </button>
-                  <button
-                    className="video-switch video-mirror"
-                    type="button"
-                    onClick={toggleMirror}
-                    aria-pressed={mirrored}
-                    aria-label={mirrored ? 'Tắt lật gương ảnh camera' : 'Bật lật gương ảnh camera'}
-                  >
-                    <FlipHorizontal size={18} /> {mirrored ? 'Ảnh gương' : 'Lật ảnh'}
-                  </button>
-                </div>
-              )}
             </div>
             <label className="checkbox-label consent-line">
               <input
@@ -889,7 +990,7 @@ export function ConversationPage({
               />
               <span>Tôi từ 18 tuổi và người đối diện đồng ý dùng camera, micro.</span>
             </label>
-            <div className="conversation-controls conversation-toolbar-container">
+            <div className="conversation-controls conversation-toolbar-container camera-external-toolbar">
               <button
                 className="button primary session-start-btn"
                 disabled={
@@ -925,6 +1026,30 @@ export function ConversationPage({
                         : 'Bắt đầu hội thoại'}
               </button>
               <div className="practice-action-toolbar conversation-audio-group">
+                {camera.state === 'running' && (
+                  <>
+                    <button
+                      className="button secondary video-switch"
+                      type="button"
+                      disabled={camera.switching}
+                      onClick={() => void switchCamera()}
+                      aria-label="Đổi sang thiết bị camera khác"
+                    >
+                      <SwitchCamera size={16} /> Đổi camera
+                    </button>
+                    <button
+                      className="button secondary video-switch video-mirror"
+                      type="button"
+                      onClick={toggleMirror}
+                      aria-pressed={mirrored}
+                      aria-label={
+                        mirrored ? 'Tắt lật gương ảnh camera' : 'Bật lật gương ảnh camera'
+                      }
+                    >
+                      <FlipHorizontal size={16} /> {mirrored ? 'Ảnh gương' : 'Lật ảnh'}
+                    </button>
+                  </>
+                )}
                 <button
                   className="button secondary sound-toggle"
                   type="button"
@@ -940,22 +1065,43 @@ export function ConversationPage({
                   type="button"
                   onClick={() => {
                     emitAudit('haptic-test', { branch: 'audio' });
-                    void haptics.testSound();
+                    void haptics.testSound(camera.result?.label ?? 'happy');
                   }}
                 >
                   Thử âm
                 </button>
               </div>
-              <span className="session-status" role="status">
+              <span
+                className={`session-status${
+                  conversation.status?.includes('Đang nghe')
+                    ? ' session-status-listening'
+                    : conversation.status?.includes('Đang chuyển')
+                      ? ' session-status-processing'
+                      : ''
+                }`}
+                role="status"
+              >
                 <Mic size={16} />
-                {checking || phase
-                  ? phase
-                  : aiPreparing
-                    ? 'Đang chuẩn bị AI trên thiết bị…'
-                    : conversation.status}
+                <span className="session-status-label">
+                  {checking || phase
+                    ? phase
+                    : aiPreparing
+                      ? 'Đang chuẩn bị AI trên thiết bị…'
+                      : conversation.status}
+                </span>
+                <span className="vad-bars" aria-hidden="true">
+                  <i />
+                  <i />
+                  <i />
+                  <i />
+                </span>
               </span>
             </div>
 
+            <FaceObservation
+              result={camera.result}
+              active={visible && camera.state === 'running' && !camera.switching}
+            />
             <ConversationSaveControl
               store={store}
               enabled={persist}
@@ -1086,26 +1232,33 @@ export function ConversationPage({
                   {segments.length > 30 && (
                     <p className="fine-note caption-older-note">Đang hiển thị 30 đoạn gần nhất.</p>
                   )}
-                  {segments.slice(-30).map((segment) => (
-                    <CaptionEntry
-                      key={segment.id}
-                      segment={segment}
-                      decision={conversation.record?.decisions.findLast(
-                        (item) => item.segmentId === segment.id,
-                      )}
-                      colors={settings.captionColors !== false}
-                      signLanguageCues={settings.signPhrasePlayback !== false}
-                      signPhrase={findPlayableSignPhrase(
-                        signs.utterances.find((item) => item.segmentId === segment.id)?.text ??
-                          segment.text,
-                        availableSigns,
-                      )}
-                      onViewSign={(phrase) => {
-                        setSampleNotice('');
-                        signs.select(phrase);
-                      }}
-                    />
-                  ))}
+                  {segments.slice(-30).map((segment, idx) => {
+                    const matchedSign = findPlayableSignPhrase(
+                      signs.utterances.find((item) => item.segmentId === segment.id)?.text ??
+                        segment.text,
+                      availableSigns,
+                    );
+                    return (
+                      <CaptionEntry
+                        key={segment.id}
+                        segment={segment}
+                        turnNumber={Math.max(0, segments.length - 30) + idx + 1}
+                        decision={conversation.record?.decisions.findLast(
+                          (item) => item.segmentId === segment.id,
+                        )}
+                        colors={settings.captionColors !== false}
+                        signLanguageCues={settings.signPhrasePlayback !== false}
+                        signPhrase={matchedSign}
+                        isSignActive={Boolean(
+                          matchedSign && signs.selection?.phrase.id === matchedSign.id,
+                        )}
+                        onViewSign={(phrase) => {
+                          setSampleNotice('');
+                          signs.select(phrase);
+                        }}
+                      />
+                    );
+                  })}
                   {conversation.provisional && (
                     <div
                       className={`caption-entry provisional-caption ${conversation.provisional.state}`}
@@ -1131,23 +1284,112 @@ export function ConversationPage({
         </section>
 
         <aside className="conversation-aside">
-          <section className="card settings-card face-feedback" aria-label="Phản hồi theo nét mặt">
-            <h2>Nét mặt hiện tại</h2>
-            {settings.signLanguageCues !== false && (
-              <FaceIllustration
-                cue={faceCue}
-                label={faceLabel}
-                active={faceSourceActive}
-                use3D={settings.expressionAvatar !== false}
-                allowed3D={
-                  faceIntervalMs === 200 && conversation.workload.rtf <= 0.8 && !signCardActive
-                }
-                colors={settings.captionColors !== false}
-              />
-            )}
-            <HapticDisplay visual={haptics.visual} compact />
+          <section
+            className={`card settings-card face-feedback${
+              effectiveFaceActive && effectiveFaceLabel && settings.captionColors !== false
+                ? ' face-feedback-aura'
+                : ''
+            }`}
+            aria-label="Phản hồi theo nét mặt"
+            style={
+              effectiveFaceActive && effectiveFaceLabel && settings.captionColors !== false
+                ? ({
+                    '--emotion-aura': expressionUI[effectiveFaceLabel].color,
+                    '--emotion-aura-surface': emotionSurfaces[effectiveFaceLabel],
+                  } as CSSProperties)
+                : undefined
+            }
+          >
+            <div className="face-feedback-header">
+              <h2>Nét mặt hiện tại</h2>
+              {previewEmotion && !faceSourceActive && (
+                <button
+                  type="button"
+                  className="tactile-reset-btn"
+                  onClick={() => {
+                    setPreviewEmotion(null);
+                    haptics.cancel();
+                  }}
+                >
+                  Đặt lại 3D
+                </button>
+              )}
+            </div>
+            <div className="face-feedback-bento">
+              {settings.signLanguageCues !== false && (
+                <FaceIllustration
+                  cue={effectiveFaceCue}
+                  label={effectiveFaceLabel}
+                  active={effectiveFaceActive}
+                  use3D={settings.expressionAvatar !== false}
+                  allowed3D
+                  lowPower={faceIntervalMs > 200 || conversation.workload.rtf > 0.85}
+                  colors={settings.captionColors !== false}
+                  alwaysShowOrb
+                  audioVolume={
+                    conversation.provisional && conversation.provisional.state !== 'unclear'
+                      ? 0.72
+                      : conversation.status?.includes('Đang nghe')
+                        ? 0.42
+                        : haptics.visual.playing && haptics.visual.active
+                          ? 0.62
+                          : 0
+                  }
+                />
+              )}
+              <div className="face-feedback-controls">
+                <HapticDisplay visual={haptics.visual} compact />
+                <div
+                  className="tactile-soundboard"
+                  aria-label="Bàn phím mô phỏng 3D và nhịp xúc giác"
+                >
+                  <small className="tactile-soundboard-label">
+                    Chạm để thử Khuôn mặt 3D &amp; Nhịp xúc giác:
+                  </small>
+                  <div className="tactile-soundboard-grid">
+                    {(
+                      ['happy', 'sad', 'angry', 'surprised', 'fear', 'disgust'] as Exclude<
+                        Expression,
+                        'neutral'
+                      >[]
+                    ).map((expr) => {
+                      const activePill = effectiveFaceActive && effectiveFaceLabel === expr;
+                      return (
+                        <button
+                          key={expr}
+                          type="button"
+                          className={`tactile-pill${activePill ? ' is-active' : ''}`}
+                          aria-label={`Mô phỏng nhanh sắc thái ${expressionUI[expr].name}`}
+                          aria-pressed={activePill}
+                          style={
+                            {
+                              '--pill-color': expressionUI[expr].color,
+                              '--pill-accent': expressionUI[expr].color,
+                              '--pill-surface': emotionSurfaces[expr],
+                            } as CSSProperties
+                          }
+                          onClick={() => {
+                            setPreviewEmotion((prev) => ({
+                              label: expr,
+                              seq: (prev?.seq ?? 0) + 1,
+                            }));
+                            void haptics.playFromGesture(expr, 'practice');
+                          }}
+                        >
+                          <span aria-hidden="true">{expressionUI[expr].icon}</span>
+                          <span>{expressionUI[expr].name.split(' / ')[0]}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            </div>
           </section>
-          <section className="card sign-panel" aria-label="Ký hiệu câu nói">
+          <section
+            className={`card sign-panel${signCardActive ? ' is-playing' : ''}`}
+            aria-label="Ký hiệu câu nói"
+          >
             <h2>Ký hiệu câu nói</h2>
             {signs.selection ? (
               <SignPhraseCard
@@ -1158,246 +1400,304 @@ export function ConversationPage({
                 onEnd={signs.end}
               />
             ) : (
-              <div className="sign-empty" role="status">
-                <p>
-                  {sampleNotice ||
-                    (conversation.record?.segments.length
-                      ? 'Câu này chưa có mẫu ký hiệu.'
-                      : 'Chờ câu tiếp theo')}
-                </p>
-                <small>Ký hiệu sẽ xuất hiện khi câu nói có mẫu phù hợp.</small>
+              <div className="sign-idle-stage">
+                <div className="sign-empty" role="status">
+                  <p>
+                    {sampleNotice ||
+                      (conversation.record?.segments.length
+                        ? 'Câu này chưa có mẫu ký hiệu.'
+                        : 'Chờ câu tiếp theo')}
+                  </p>
+                  <small>Ký hiệu sẽ xuất hiện khi câu nói có mẫu phù hợp.</small>
+                </div>
+                <div className="sign-scenario-gallery" aria-label="Kịch bản mẫu theo tình huống">
+                  <div className="scenario-group scenario-health">
+                    <span className="scenario-group-badge">🏥 Khám bệnh &amp; Y tế</span>
+                    <div className="scenario-group-buttons">
+                      {[
+                        'Tôi muốn đăng ký khám sức khỏe.',
+                        'Bác sĩ tên là gì ạ.',
+                        'Bị đau nhức đầu quá.',
+                      ].map((phraseText) => (
+                        <button
+                          key={phraseText}
+                          type="button"
+                          className="scenario-card-btn"
+                          onClick={() => selectScenarioPhrase(phraseText)}
+                        >
+                          {phraseText}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="scenario-group scenario-comm">
+                    <span className="scenario-group-badge">🤝 Hỗ trợ Giao tiếp</span>
+                    <div className="scenario-group-buttons">
+                      {[
+                        'Xin viết ra giấy giúp tôi.',
+                        'Làm ơn nói chậm lại.',
+                        'Tôi không hiểu điều đó.',
+                      ].map((phraseText) => (
+                        <button
+                          key={phraseText}
+                          type="button"
+                          className="scenario-card-btn"
+                          onClick={() => selectScenarioPhrase(phraseText)}
+                        >
+                          {phraseText}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
             <QuickPhrasePicker
               available={availableSigns}
-              onSelectPhrase={(text) => {
-                const phrase = findPlayableSignPhrase(text, availableSigns);
-                if (phrase) {
-                  setSampleNotice('');
-                  signs.select(phrase);
-                } else {
-                  signs.clear();
-                  setSampleNotice(`Chưa có mẫu ký hiệu cho câu “${text}”`);
-                }
-              }}
+              activePhraseId={signs.selection?.phrase.id}
+              activeSelectionKey={
+                signs.selection ? `${signs.selection.id}:${signs.selection.phrase.id}` : undefined
+              }
+              activePhraseText={signs.selection?.phrase.text}
+              onSelectPhrase={selectScenarioPhrase}
             />
           </section>
-          <section className="card settings-card cue-panel">
-            <details>
-              <summary>Sắc thái câu vừa nói</summary>
-              <h2>
-                {latest?.label
-                  ? expressionUI[latest.label].name
-                  : latest
-                    ? 'Chưa xác định'
-                    : 'Đang chờ lời nói'}
-              </h2>
-              <p>
-                {latest?.reason === 'conflict'
-                  ? 'Các nguồn chưa thống nhất. Chưa kết luận cho câu này.'
-                  : latest?.label
-                    ? 'Gợi ý cho câu vừa nói. Đây không phải kết luận về cảm xúc thật.'
-                    : !fusionEnabled
-                      ? 'Đang dùng chế độ nhẹ; phụ đề và biểu cảm mặt vẫn hoạt động.'
-                      : conversation.error
-                        ? 'Gợi ý tổng hợp tạm dừng; phụ đề và biểu cảm mặt vẫn hoạt động.'
-                        : !fusionReady
-                          ? 'Gói phân tích câu chữ đang được chuẩn bị.'
-                          : rejectedText?.reason === 'clipped-audio'
-                            ? 'Âm thanh đầu vào bị méo; hãy giảm mức micro trong cài đặt thiết bị.'
-                            : rejectedText
-                              ? 'Câu chưa đủ rõ để gợi ý sắc thái. Phụ đề vẫn hoạt động.'
-                              : segments.length
-                                ? latest?.reason === 'low-score'
-                                  ? 'Chưa có gợi ý rõ cho câu này.'
-                                  : 'Chưa có gợi ý rõ cho câu này.'
-                                : 'Kết quả xuất hiện sau khi người đối diện nói một câu.'}
-              </p>
+          <div className="aside-drawers-row">
+            <section className="card settings-card cue-panel">
               <details>
-                <summary>Điều kiện hình ảnh</summary>
-                <p>{resultExplanation(camera.result)}</p>
-                <p>Điểm model là gợi ý về biểu cảm, không xác định cảm xúc hay ý định.</p>
-              </details>
-            </details>
-          </section>
-
-          <section className="card settings-card session-options">
-            <details
-              open={optionsOpen}
-              onToggle={(event) => setOptionsOpen(event.currentTarget.open)}
-            >
-              <summary>Tùy chọn</summary>
-              <label className="checkbox-label">
-                <input
-                  type="checkbox"
-                  checked={settings.signPhrasePlayback !== false}
-                  disabled={!changeSettings}
-                  onChange={(e) =>
-                    changeSettings?.({ ...settings, signPhrasePlayback: e.target.checked })
-                  }
-                />
-                <span>Tự hiện ký hiệu khi có mẫu</span>
-              </label>
-              <label className="checkbox-label">
-                <input
-                  type="checkbox"
-                  checked={settings.signLanguageCues !== false}
-                  disabled={!changeSettings}
-                  onChange={(event) =>
-                    changeSettings?.({ ...settings, signLanguageCues: event.target.checked })
-                  }
-                />
-                <span>Hiện minh họa nét mặt</span>
-              </label>
-              {runtimeProfile.id === 'pc-candidate' &&
-                runtimeProfile.asr !== 'moonshine-streaming-vi-research' && (
-                  <p className="fine-note">
-                    Bản thử tốc độ PC: Gipformer và B0/WebGPU. Chưa nghiệm thu Android hoặc độ chính
-                    xác hội thoại.
+                <summary>Sắc thái câu vừa nói</summary>
+                <div className="drawer-popover-body">
+                  <h2>
+                    {latest?.label
+                      ? expressionUI[latest.label].name
+                      : latest
+                        ? 'Chưa xác định'
+                        : 'Đang chờ lời nói'}
+                  </h2>
+                  <p>
+                    {latest?.reason === 'conflict'
+                      ? 'Các nguồn chưa thống nhất. Chưa kết luận cho câu này.'
+                      : latest?.label
+                        ? 'Gợi ý cho câu vừa nói. Đây không phải kết luận về cảm xúc thật.'
+                        : !fusionEnabled
+                          ? 'Đang dùng chế độ nhẹ; phụ đề và biểu cảm mặt vẫn hoạt động.'
+                          : conversation.error
+                            ? 'Gợi ý tổng hợp tạm dừng; phụ đề và biểu cảm mặt vẫn hoạt động.'
+                            : !fusionReady
+                              ? 'Gói phân tích câu chữ đang được chuẩn bị.'
+                              : rejectedText?.reason === 'clipped-audio'
+                                ? 'Âm thanh đầu vào bị méo; hãy giảm mức micro trong cài đặt thiết bị.'
+                                : rejectedText
+                                  ? 'Câu chưa đủ rõ để gợi ý sắc thái. Phụ đề vẫn hoạt động.'
+                                  : segments.length
+                                    ? latest?.reason === 'low-score'
+                                      ? 'Chưa có gợi ý rõ cho câu này.'
+                                      : 'Chưa có gợi ý rõ cho câu này.'
+                                    : 'Kết quả xuất hiện sau khi người đối diện nói một câu.'}
                   </p>
-                )}
-              <label className="checkbox-label">
-                <input
-                  type="checkbox"
-                  checked={settings.captionColors !== false}
-                  disabled={!changeSettings}
-                  onChange={(event) =>
-                    changeSettings?.({ ...settings, captionColors: event.target.checked })
-                  }
-                />
-                <span>Màu nhãn, viền và minh họa</span>
-              </label>
-              <label className="checkbox-label">
-                <input
-                  type="checkbox"
-                  checked={settings.expressionAvatar !== false}
-                  disabled={!changeSettings}
-                  onChange={(event) =>
-                    changeSettings?.({ ...settings, expressionAvatar: event.target.checked })
-                  }
-                />
-                <span>Minh họa nét mặt có chiều sâu</span>
-              </label>
-              <label className="checkbox-label">
-                <input
-                  type="checkbox"
-                  checked={toneEnabled}
-                  disabled={running || !aiReady}
-                  onChange={(event) => {
-                    const enabled = event.target.checked;
-                    setToneEnabled(enabled);
-                    if (enabled) {
-                      setFusionEnabled(true);
-                      void conversation.prepareTone();
-                    } else {
-                      conversation.disableTone();
-                      emitAudit('tone-disabled', { branch: 'voice', enabled: false });
-                    }
-                  }}
-                />
-                <span>Thử tone giọng trong tổng hợp · tải thêm khoảng 356 MiB</span>
-              </label>
-              {toneEnabled && (
-                <p role="status">
-                  {conversation.toneState === 'preparing'
-                    ? 'Đang chuẩn bị tone trước phiên…'
-                    : conversation.toneState === 'ready'
-                      ? 'Tone đã sẵn sàng · chưa kiểm chứng chất lượng tiếng Việt.'
-                      : 'Tone chưa sẵn sàng. Tắt rồi bật lại để thử chuẩn bị; cần thiết bị hỗ trợ GPU.'}
-                </p>
-              )}
-              {toneEnabled && conversation.toneCached === false && (
-                <p>
-                  Chưa lưu được model tone vào cache. Phiên này vẫn chạy; lần sau có thể cần tải
-                  lại.
-                </p>
-              )}
-              <p>Ít nhất hai nguồn đủ chất lượng đồng thuận; nguồn mâu thuẫn thì chưa kết luận.</p>
-              <p>Nhịp theo nét mặt đã ổn định; tổng hợp chỉ hiển thị gợi ý cho câu.</p>
-              <label className="field">
-                Mô hình phụ đề
-                <select
-                  aria-label="Mô hình phụ đề"
-                  value={
-                    runtimeProfile.id === 'pc-candidate'
-                      ? runtimeProfile.asr
-                      : moonshineNeedsLocalMode || moonshineRuntimeUnavailable
-                        ? 'product'
-                        : requestedProfile
-                  }
-                  disabled={runtimeProfile.id === 'pc-candidate' || running || !changeSettings}
-                  onChange={(event) =>
-                    changeSettings?.({
-                      ...settings,
-                      asrProfile: event.target.value as Settings['asrProfile'],
-                    })
-                  }
-                >
-                  <option value="product">PhoWhisper-tiny · mặc định</option>
-                  {runtimeProfile.id === 'pc-candidate' && (
-                    <option value="gipformer-research">Gipformer tiếng Việt · bản thử PC</option>
-                  )}
-                  <option value="moonshine-streaming-vi-research" disabled={!moonshineAvailable}>
-                    {moonshineAvailable
-                      ? 'Moonshine Streaming tiếng Việt · bản thử local'
-                      : 'Moonshine Streaming tiếng Việt · chưa khả dụng ở bản này'}
-                  </option>
-                </select>
-              </label>
-              {moonshineNeedsLocalMode && (
-                <p className="fine-note" role="status">
-                  Moonshine chỉ chạy thử trên localhost với chế độ cô lập.{' '}
-                  {isLocalMoonshineOrigin ? (
-                    <a href="/?moonshine=1">Mở chế độ thử local</a>
-                  ) : (
-                    'Link chia sẻ hiện tại giữ nguyên PhoWhisper.'
-                  )}
-                </p>
-              )}
-              {moonshineRuntimeUnavailable && (
-                <p className="fine-note" role="status">
-                  Gói thử nghiệm chưa tương thích với runtime trên thiết bị. PhoWhisper tiếp tục
-                  hoạt động.
-                </p>
-              )}
-              {moonshineAvailable && (
-                <p className="fine-note">
-                  Model được chuẩn bị trước phiên; lần đầu tải khoảng 43 MiB. Chưa có benchmark
-                  SignEmo.
-                </p>
-              )}
-              <label className="checkbox-label">
-                <input
-                  type="checkbox"
-                  checked={fusionEnabled}
-                  disabled={running || !fusionReady}
-                  onChange={(event) => {
-                    const enabled = event.target.checked;
-                    setFusionEnabled(enabled);
-                    setRecoveryMode(false);
-                    if (enabled) emitAudit('fusion-enabled', { enabled: true });
-                  }}
-                />
-                <span>Thử gợi ý tổng hợp</span>
-              </label>
-              <details className="recent-activity">
-                <summary>Hoạt động gần đây</summary>
-                <ol>
-                  {auditEvents.slice(0, 5).map((event) => (
-                    <li key={event.id} className={`level-${event.level}`}>
-                      <time dateTime={new Date(event.occurredAt).toISOString()}>
-                        {new Intl.DateTimeFormat('vi-VN', { timeStyle: 'medium' }).format(
-                          event.occurredAt,
-                        )}
-                      </time>{' '}
-                      {auditMessage(event)}
-                    </li>
-                  ))}
-                  {!auditEvents.length && <li>Chưa có hoạt động nào được ghi lại.</li>}
-                </ol>
+                </div>
               </details>
-            </details>
-          </section>
+            </section>
+
+            <section className="card settings-card session-options">
+              <details
+                open={optionsOpen}
+                onToggle={(event) => setOptionsOpen(event.currentTarget.open)}
+              >
+                <summary>Tùy chọn</summary>
+                <div className="drawer-popover-body">
+                  <label className="checkbox-label">
+                    <input
+                      type="checkbox"
+                      checked={settings.signPhrasePlayback !== false}
+                      disabled={!changeSettings}
+                      onChange={(e) =>
+                        changeSettings?.({ ...settings, signPhrasePlayback: e.target.checked })
+                      }
+                    />
+                    <span>Tự hiện ký hiệu khi có mẫu</span>
+                  </label>
+                  <label className="checkbox-label">
+                    <input
+                      type="checkbox"
+                      checked={settings.signLanguageCues !== false}
+                      disabled={!changeSettings}
+                      onChange={(event) =>
+                        changeSettings?.({ ...settings, signLanguageCues: event.target.checked })
+                      }
+                    />
+                    <span>Hiện minh họa nét mặt</span>
+                  </label>
+                  {runtimeProfile.id === 'pc-candidate' &&
+                    runtimeProfile.asr !== 'moonshine-streaming-vi-research' && (
+                      <p className="fine-note">
+                        Bản thử tốc độ PC: Gipformer và B0/WebGPU. Chưa nghiệm thu Android hoặc độ
+                        chính xác hội thoại.
+                      </p>
+                    )}
+                  <label className="checkbox-label">
+                    <input
+                      type="checkbox"
+                      checked={settings.captionColors !== false}
+                      disabled={!changeSettings}
+                      onChange={(event) =>
+                        changeSettings?.({ ...settings, captionColors: event.target.checked })
+                      }
+                    />
+                    <span>Màu nhãn, viền và minh họa</span>
+                  </label>
+                  <label className="checkbox-label">
+                    <input
+                      type="checkbox"
+                      checked={settings.expressionAvatar !== false}
+                      disabled={!changeSettings}
+                      onChange={(event) =>
+                        changeSettings?.({ ...settings, expressionAvatar: event.target.checked })
+                      }
+                    />
+                    <span>Minh họa nét mặt có chiều sâu</span>
+                  </label>
+                  <label className="checkbox-label">
+                    <input
+                      type="checkbox"
+                      checked={toneEnabled}
+                      disabled={running || !aiReady}
+                      onChange={(event) => {
+                        const enabled = event.target.checked;
+                        setToneEnabled(enabled);
+                        if (enabled) {
+                          setFusionEnabled(true);
+                          void conversation.prepareTone();
+                        } else {
+                          conversation.disableTone();
+                          emitAudit('tone-disabled', { branch: 'voice', enabled: false });
+                        }
+                      }}
+                    />
+                    <span>Thử tone giọng trong tổng hợp · tải thêm khoảng 356 MiB</span>
+                  </label>
+                  {toneEnabled && (
+                    <p role="status">
+                      {conversation.toneState === 'preparing'
+                        ? 'Đang chuẩn bị tone trước phiên…'
+                        : conversation.toneState === 'ready'
+                          ? 'Tone đã sẵn sàng · chưa kiểm chứng chất lượng tiếng Việt.'
+                          : 'Tone chưa sẵn sàng. Tắt rồi bật lại để thử chuẩn bị; cần thiết bị hỗ trợ GPU.'}
+                    </p>
+                  )}
+                  {toneEnabled && conversation.toneCached === false && (
+                    <p>
+                      Chưa lưu được model tone vào cache. Phiên này vẫn chạy; lần sau có thể cần tải
+                      lại.
+                    </p>
+                  )}
+                  <p>
+                    Ít nhất hai nguồn đủ chất lượng đồng thuận; nguồn mâu thuẫn thì chưa kết luận.
+                  </p>
+                  <p>Nhịp theo nét mặt đã ổn định; tổng hợp chỉ hiển thị gợi ý cho câu.</p>
+                  <label className="field">
+                    Mô hình phụ đề
+                    <select
+                      aria-label="Mô hình phụ đề"
+                      value={
+                        runtimeProfile.id === 'pc-candidate'
+                          ? runtimeProfile.asr
+                          : moonshineNeedsLocalMode || moonshineRuntimeUnavailable
+                            ? 'product'
+                            : requestedProfile === 'gipformer-research' && !isLocalhost
+                              ? 'product'
+                              : requestedProfile
+                      }
+                      disabled={runtimeProfile.id === 'pc-candidate' || running || !changeSettings}
+                      onChange={(event) => {
+                        const nextProfile = event.target.value as Settings['asrProfile'];
+                        if (isLiveLocalhost) {
+                          setLocalAsrChoice(nextProfile);
+                          try {
+                            window.sessionStorage.setItem('signemo-local-asr-choice', nextProfile);
+                          } catch {
+                            /* ignore storage errors */
+                          }
+                        }
+                        changeSettings?.({
+                          ...settings,
+                          asrProfile: nextProfile,
+                        });
+                      }}
+                    >
+                      <option value="product">PhoWhisper-tiny · dự phòng offline</option>
+                      {runtimeProfile.id === 'pc-candidate' ? (
+                        <option value="gipformer-research">
+                          Gipformer tiếng Việt · tốc độ cao (PC)
+                        </option>
+                      ) : isLocalhost ? (
+                        <option value="gipformer-research">
+                          Gipformer tiếng Việt · hiện chữ trực tiếp (ưu tiên local)
+                        </option>
+                      ) : null}
+                      <option value="moonshine-streaming-vi-research" disabled={!moonshineAvailable}>
+                        {moonshineAvailable
+                          ? 'Moonshine Streaming tiếng Việt · bản thử local'
+                          : 'Moonshine Streaming tiếng Việt · chưa khả dụng ở bản này'}
+                      </option>
+                    </select>
+                  </label>
+                  {moonshineNeedsLocalMode && (
+                    <p className="fine-note" role="status">
+                      Moonshine chỉ chạy thử trên localhost với chế độ cô lập.{' '}
+                      {isLocalMoonshineOrigin ? (
+                        <a href="/?moonshine=1">Mở chế độ thử local</a>
+                      ) : (
+                        'Link chia sẻ hiện tại giữ nguyên PhoWhisper.'
+                      )}
+                    </p>
+                  )}
+                  {moonshineRuntimeUnavailable && (
+                    <p className="fine-note" role="status">
+                      Gói thử nghiệm chưa tương thích với runtime trên thiết bị. PhoWhisper tiếp tục
+                      hoạt động.
+                    </p>
+                  )}
+                  {moonshineAvailable && (
+                    <p className="fine-note">
+                      Model được chuẩn bị trước phiên; lần đầu tải khoảng 43 MiB. Chưa có benchmark
+                      SignEmo.
+                    </p>
+                  )}
+                  <label className="checkbox-label">
+                    <input
+                      type="checkbox"
+                      checked={fusionEnabled}
+                      disabled={running || !fusionReady}
+                      onChange={(event) => {
+                        const enabled = event.target.checked;
+                        setFusionEnabled(enabled);
+                        setRecoveryMode(false);
+                        if (enabled) emitAudit('fusion-enabled', { enabled: true });
+                      }}
+                    />
+                    <span>Thử gợi ý tổng hợp</span>
+                  </label>
+                  <details className="recent-activity">
+                    <summary>Hoạt động gần đây</summary>
+                    <ol>
+                      {auditEvents.slice(0, 5).map((event) => (
+                        <li key={event.id} className={`level-${event.level}`}>
+                          <time dateTime={new Date(event.occurredAt).toISOString()}>
+                            {new Intl.DateTimeFormat('vi-VN', { timeStyle: 'medium' }).format(
+                              event.occurredAt,
+                            )}
+                          </time>{' '}
+                          {auditMessage(event)}
+                        </li>
+                      ))}
+                      {!auditEvents.length && <li>Chưa có hoạt động nào được ghi lại.</li>}
+                    </ol>
+                  </details>
+                </div>
+              </details>
+            </section>
+          </div>
         </aside>
       </div>
 

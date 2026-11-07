@@ -133,6 +133,7 @@ export class UtteranceBuilder {
   constructor(
     private collectProsody = false,
     private silenceHangoverFrames = 17,
+    private maxFrames = 94,
   ) {}
   snapshot(
     policy: 'baseline' | 'early-candidate' | 'streaming-candidate' = 'baseline',
@@ -149,11 +150,16 @@ export class UtteranceBuilder {
     return this.copyChunk();
   }
   flush(boundary: 'silence' | 'limit' | 'finish' = 'finish'): SpeechChunk | null {
-    const valid = this.speechFrames >= 8;
+    const meanSpeechRms = mean(this.speechLevels);
+    const hasAudibleSpeech = this.speechLevels.length === 0 || meanSpeechRms >= 0.0045;
+    const valid = this.speechFrames >= 8 && hasAudibleSpeech;
     const chunk = valid ? { ...this.copyChunk(), boundary } : null;
+    const carryFrames =
+      boundary === 'limit' && this.maxFrames > 94 ? this.frames.slice(-6) : [];
+    const carryNoise = carryFrames.map((part) => frameRms(part));
     this.frames = [];
-    this.preRoll = [];
-    this.preRollNoise = [];
+    this.preRoll = carryFrames;
+    this.preRollNoise = carryNoise;
     this.noiseFrames = [];
     this.speechLevels = [];
     this.clippedSamples = 0;
@@ -203,7 +209,8 @@ export class UtteranceBuilder {
       this.silenceFrames++;
       this.noiseFrames.push(rms);
     }
-    if (this.silenceFrames < this.silenceHangoverFrames && this.frames.length < 94) return null;
+    if (this.silenceFrames < this.silenceHangoverFrames && this.frames.length < this.maxFrames)
+      return null;
     return this.flush(this.silenceFrames >= this.silenceHangoverFrames ? 'silence' : 'limit');
   }
   private copyChunk(): SpeechChunk {
@@ -246,4 +253,53 @@ export function normalizeWaveform(samples: Float32Array) {
   const mean = samples.reduce((a, b) => a + b, 0) / samples.length;
   const variance = samples.reduce((a, b) => a + (b - mean) ** 2, 0) / samples.length;
   return Float32Array.from(samples, (v) => (v - mean) / Math.sqrt(variance + 1e-7));
+}
+
+export interface AsrGainParams {
+  readonly gain: number;
+  readonly mean: number;
+}
+
+/** Rollback switch: default false on live mic so ambient noise is never amplified into hallucinations. */
+export const ASR_GAIN_NORMALIZATION = false;
+
+export function computeAsrGainParams(
+  samples: Float32Array,
+  enabled: boolean = ASR_GAIN_NORMALIZATION,
+): AsrGainParams {
+  if (!samples.length) return { gain: 1, mean: 0 };
+  let sum = 0;
+  for (let i = 0; i < samples.length; i++) sum += samples[i];
+  const mean = sum / samples.length;
+  let energy = 0;
+  let peak = 0;
+  for (let i = 0; i < samples.length; i++) {
+    const c = samples[i] - mean;
+    energy += c * c;
+    const absC = Math.abs(c);
+    if (absC > peak) peak = absC;
+  }
+  const rms = Math.sqrt(energy / samples.length);
+  // Noise gate: never amplify near-silence or ambient room hum into fake speech.
+  const gain =
+    !enabled || rms < 0.0075 || peak === 0
+      ? 1
+      : Math.min(4, 0.92 / peak, Math.max(1, 0.08 / rms));
+  return { gain, mean };
+}
+
+export function applyAsrGain(samples: Float32Array, params: AsrGainParams): Float32Array {
+  const out = new Float32Array(samples.length);
+  const { mean, gain } = params;
+  for (let i = 0; i < samples.length; i++) {
+    out[i] = (samples[i] - mean) * gain;
+  }
+  return out;
+}
+
+export function normalizeAsrPcm(
+  samples: Float32Array,
+  enabled: boolean = ASR_GAIN_NORMALIZATION,
+): Float32Array {
+  return applyAsrGain(samples, computeAsrGainParams(samples, enabled));
 }

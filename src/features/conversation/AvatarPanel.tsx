@@ -1,4 +1,4 @@
-import { Component, lazy, Suspense, useState, type ReactNode } from 'react';
+import { Component, lazy, Suspense, type ReactNode } from 'react';
 import type { Expression } from '../../shared/contracts';
 import { emitAudit } from '../../infrastructure/audit/log';
 
@@ -20,10 +20,15 @@ export class AvatarBoundary extends Component<
   }
 }
 
+// Module-level lazy import caches the loaded chunk promise across renders
+const ExpressionAvatarLazy = lazy(() => import('./ExpressionAvatar'));
+
 /** A rejected optional import must never replace the caption/session screen. */
 export function AvatarPanel({
   expression,
   active,
+  audioVolume,
+  lowPower,
   fallback,
   reduced,
   replay,
@@ -32,20 +37,22 @@ export function AvatarPanel({
 }: {
   expression: Expression | null;
   active: boolean;
+  audioVolume?: number;
+  lowPower?: boolean;
   fallback: ReactNode;
   reduced: boolean;
   replay: number;
   onUnavailable: () => void;
   onReady: () => void;
 }) {
-  // A fresh mount (toggle off/on) can retry the chunk after connectivity returns.
-  const [Avatar] = useState(() => lazy(() => import('./ExpressionAvatar')));
   return (
     <AvatarBoundary fallback={fallback}>
       <Suspense fallback={fallback}>
-        <Avatar
+        <ExpressionAvatarLazy
           expression={expression}
           active={active}
+          audioVolume={audioVolume}
+          lowPower={lowPower}
           reduced={reduced}
           replay={replay}
           onUnavailable={onUnavailable}

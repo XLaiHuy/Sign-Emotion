@@ -1,5 +1,7 @@
 import { env, pipeline, type AutomaticSpeechRecognitionPipeline } from '@huggingface/transformers';
 import type { AsrAdapter, AsrProfileId, AsrRequest } from '../../domain/asr';
+import { normalizeAsrPcm } from '../../domain/audio';
+import { sanitizeTranscript } from '../../domain/speechMetrics';
 import {
   BASELINE_ASR_PROFILE,
   VIETNAMESE_ASR_PROFILE,
@@ -12,8 +14,23 @@ env.allowLocalModels = true;
 env.localModelPath = '/models/local/';
 env.useBrowserCache = false;
 if (env.backends.onnx.wasm) {
-  env.backends.onnx.wasm.wasmPaths = '/runtime/speech/';
-  env.backends.onnx.wasm.numThreads = 1;
+  const origin = typeof self !== 'undefined' && self.location?.origin ? self.location.origin : '';
+  env.backends.onnx.wasm.wasmPaths = `${origin}/runtime/speech/`;
+  const isIsolated =
+    typeof self !== 'undefined' &&
+    Boolean((self as unknown as { crossOriginIsolated?: boolean }).crossOriginIsolated);
+  const threads = isIsolated
+    ? Math.min(
+        4,
+        Math.max(
+          1,
+          (typeof navigator !== 'undefined' && navigator.hardwareConcurrency
+            ? navigator.hardwareConcurrency
+            : 2) - 1,
+        ),
+      )
+    : 1;
+  env.backends.onnx.wasm.numThreads = threads;
   env.backends.onnx.wasm.proxy = false;
 }
 const createAsr = pipeline as unknown as (
@@ -53,19 +70,24 @@ class WhisperAdapter implements AsrAdapter {
       throw new Error('PCM không hợp lệ.');
     const generation = this.generation,
       start = performance.now();
-    const output = await this.model(request.samples, {
+    const normalizedSamples = normalizeAsrPcm(request.samples, request.gainNormalization ?? false);
+    const output = await this.model(normalizedSamples, {
       language: 'vietnamese',
       task: 'transcribe',
-      max_new_tokens: Math.min(80, Math.max(12, Math.ceil((request.samples.length / 16000) * 14))),
+      max_new_tokens: Math.min(
+        224,
+        Math.max(24, Math.ceil((request.samples.length / 16000) * 26)),
+      ),
       do_sample: false,
       return_timestamps: false,
     });
     if (generation !== this.generation) throw new DOMException('Cancelled', 'AbortError');
+    const rawText = (Array.isArray(output) ? output[0].text : output.text) || '';
     return {
       id: request.id,
       startMs: request.startMs,
       endMs: request.endMs,
-      text: (Array.isArray(output) ? output[0].text : output.text).trim(),
+      text: sanitizeTranscript(rawText),
       modelVersion: this.version,
       processingMs: performance.now() - start,
       finalizedAtMs: performance.now(),

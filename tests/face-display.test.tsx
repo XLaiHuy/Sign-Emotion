@@ -38,3 +38,19 @@ it.each(['multiple-faces', 'poor-quality', 'uncertain'] as const)(
     expect(result.current.label).toBeNull();
   },
 );
+it('carries a confirmed expression across a transient stabilizing frame for up to 350 ms', () => {
+  vi.useFakeTimers();
+  const valid: InferenceResult = { ...emptyResult(), status: 'valid', label: 'happy' };
+  const stabilizing: InferenceResult = {
+    ...emptyResult('uncertain'),
+    decisionReason: 'stabilizing',
+  };
+  const { result, rerender } = renderHook(
+    ({ frame, enabled }) => useFaceDisplay(frame, enabled),
+    { initialProps: { frame: valid, enabled: true } },
+  );
+  rerender({ frame: stabilizing, enabled: true });
+  expect(result.current).toEqual({ label: 'happy', carrying: true });
+  act(() => vi.advanceTimersByTime(350));
+  expect(result.current.label).toBeNull();
+});

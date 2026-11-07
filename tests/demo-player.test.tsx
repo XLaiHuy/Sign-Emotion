@@ -1,6 +1,8 @@
+import { StrictMode } from 'react';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { DemoPlayer } from '../src/features/overview/DemoPlayer';
+import { introVideo, introYouTube } from '../src/shared/optionalMedia';
 
 vi.mock('../src/infrastructure/offline/optionalMedia', () => ({
   optionalMediaSaved: vi.fn(async () => false),
@@ -22,7 +24,10 @@ it('plays short preview clip automatically (muted) and opens YouTube iframe only
   const { container } = render(<DemoPlayer />);
   const video = container.querySelector('video')!;
   expect(video).not.toBeNull();
-  expect(video.src).toContain('/demo/signemo-preview-');
+  expect(video.src).toContain('/demo/signemo-preview-24836d1d4c17.mp4');
+  expect(introVideo.url).toBe('/demo/signemo-preview-24836d1d4c17.mp4');
+  expect(introYouTube.shortId).toBe('jT6cjQ0aQhI');
+  expect(introYouTube.shortUrl).toBe('https://www.youtube.com/watch?v=jT6cjQ0aQhI');
   expect(video.autoplay).toBe(true);
   expect(video.muted).toBe(true);
   expect(video.loop).toBe(true);
@@ -43,6 +48,17 @@ it('plays short preview clip automatically (muted) and opens YouTube iframe only
   // Close modal via Close button
   fireEvent.click(screen.getByRole('button', { name: 'Đóng video' }));
   expect(document.querySelector('iframe')).toBeNull();
+});
+
+it('keeps the preview source after React.StrictMode simulated unmount/remount', () => {
+  const { container } = render(
+    <StrictMode>
+      <DemoPlayer />
+    </StrictMode>,
+  );
+  expect(container.querySelector('video')!.getAttribute('src')).toContain(
+    '/demo/signemo-preview-',
+  );
 });
 
 it('supports preview pause toggle, sound toggle, and closing modal via Escape key', () => {

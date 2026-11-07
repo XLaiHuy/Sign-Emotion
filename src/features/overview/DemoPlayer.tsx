@@ -42,6 +42,11 @@ export function DemoPlayer() {
 
   useEffect(() => {
     const node = video.current;
+    // React.StrictMode re-runs effects: restore the source its simulated cleanup removed.
+    if (node && !node.getAttribute('src')) {
+      node.setAttribute('src', introVideo.url);
+      node.load();
+    }
     return () => {
       if (node) {
         node.pause();

@@ -13,6 +13,7 @@ export interface AsrRequest {
   revision?: number;
   boundary?: TranscriptSegment['boundary'];
   utteranceId?: string;
+  gainNormalization?: boolean;
 }
 /** Window decoders share a lifecycle, without claiming stateful streaming. */
 export interface AsrAdapter {

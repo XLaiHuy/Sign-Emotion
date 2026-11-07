@@ -40,10 +40,19 @@
   text-align: center;
 }
 .conversation-workspace .conversation-capture > .conversation-save,
+.conversation-workspace .conversation-capture > .face-observation,
 .conversation-workspace .conversation-capture > .recent-activity,
 .conversation-workspace .conversation-capture > .model-readiness,
 .conversation-workspace .conversation-capture > .error-box {
   grid-column: 1 / -1;
+}
+.face-observation {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.face-observation > p {
+  min-height: 1.5em;
+  margin: 0;
 }
 .conversation-workspace .conversation-controls {
   align-content: start;
@@ -102,6 +111,7 @@
 }
 .face-feedback .face-illustration-stage {
   display: flex;
+  align-items: center;
   padding: 12px;
   gap: 14px;
   margin-block: 0 8px;
@@ -114,21 +124,46 @@
 }
 .face-feedback .face-illustration-3d {
   flex: 0 0 120px;
-}
-.face-feedback .face-illustration-3d {
   width: 120px;
   height: 120px;
+  max-width: 100%;
+  aspect-ratio: 1 / 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .face-feedback .face-illustration-3d canvas {
-  width: 120px !important;
-  height: 120px !important;
+  width: 100% !important;
+  height: 100% !important;
+  max-width: 100%;
+  max-height: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: contain;
 }
 .face-feedback .expression-motion {
   gap: 14px;
 }
+.face-feedback .expression-motion-bare {
+  width: 100%;
+  height: 100%;
+  gap: 0;
+  padding: 0;
+  overflow: hidden;
+  justify-content: center;
+  align-items: center;
+}
+.face-feedback .expression-motion-bare .expression-motion-face {
+  width: 100%;
+  height: 100%;
+  max-width: 120px;
+  max-height: 120px;
+}
 .face-feedback .expression-motion-face {
   width: 110px;
-  height: 110px;
+  max-width: 100%;
+  height: auto;
+  aspect-ratio: 1 / 1;
+  flex-shrink: 0;
 }
 .face-feedback .sign-cue-note {
   display: none;
@@ -168,8 +203,9 @@
   height: 300px;
   min-height: 300px;
   padding: 24px;
-  background: #eef2eb;
-  color: #344d40;
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px dashed rgba(51, 65, 85, 0.7);
+  color: #94a3b8;
   border-radius: 12px;
   text-align: center;
   overflow-wrap: anywhere;
@@ -203,7 +239,7 @@
   flex-wrap: wrap;
 }
 .quick-phrase-chip small {
-  color: #586c5d;
+  color: var(--text-secondary, #94a3b8);
   font-size: 12px;
 }
 .quick-phrase-tab {
@@ -224,7 +260,7 @@
 }
 .sign-phrase-header p {
   margin: 0;
-  color: #24322c;
+  color: #f8fafc;
   font-size: 18px;
   overflow-wrap: anywhere;
 }
@@ -286,7 +322,7 @@
 }
 .sign-phrase-card > small {
   display: block;
-  color: #586c5d;
+  color: var(--text-secondary, #94a3b8);
   font-size: 14px;
 }
 .sign-source {
@@ -306,7 +342,7 @@
   position: fixed;
   inset: 0;
   z-index: 150;
-  background: #f7f6f1;
+  background: #020617;
   padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right))
     max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left));
   display: flex;
@@ -331,9 +367,9 @@
   align-items: center;
   gap: 0 12px;
   padding: 8px 12px;
-  border: 1px solid #dde3da;
+  border: 1px solid rgba(51, 65, 85, 0.65);
   border-radius: 12px;
-  background: #fff;
+  background: rgba(15, 23, 42, 0.85);
 }
 .conversation-save .checkbox-label {
   min-height: 44px;
@@ -349,11 +385,11 @@
   gap: 8px;
   font-size: 14px;
   margin: 0;
-  color: #426854;
+  color: #94a3b8;
 }
 .save-locked,
 .save-error {
-  color: #7a5700;
+  color: #fbbf24;
 }
 .conversation-save form {
   margin-top: 12px;
@@ -394,7 +430,7 @@
 .conversation-aside .cue-panel h2 {
   margin-top: 12px;
 }
-@media (max-width: 1199px) {
+@media (max-width: 899px) {
   .conversation-workspace .conversation-layout {
     grid-template-columns: minmax(0, 1fr);
   }
@@ -402,16 +438,16 @@
     grid-template-columns: minmax(0, 1fr);
   }
   .sign-empty {
-    min-height: 260px;
+    min-height: 200px;
     max-height: 440px;
     aspect-ratio: auto;
   }
   .sign-phrase-stage {
-    min-height: 260px;
+    min-height: 240px;
     max-height: 540px;
   }
 }
-@container conversation-space (max-width: 900px) {
+@container conversation-space (max-width: 680px) {
   .conversation-layout {
     grid-template-columns: minmax(0, 1fr) !important;
   }
@@ -439,18 +475,32 @@
     height: 45dvh;
   }
   .face-feedback .face-illustration-stage {
-    grid-template-columns: 100px minmax(0, 1fr);
+    display: flex;
+    align-items: center;
     gap: 10px;
     padding: 10px;
   }
-  .face-feedback .face-illustration-3d,
-  .face-feedback .face-illustration-3d canvas {
+  .face-feedback .face-illustration-3d {
+    flex: 0 0 100px;
     width: 100px !important;
     height: 100px !important;
+    max-width: 100%;
+    aspect-ratio: 1 / 1;
+  }
+  .face-feedback .face-illustration-3d canvas {
+    width: 100% !important;
+    height: 100% !important;
+    max-width: 100%;
+    max-height: 100%;
+    aspect-ratio: 1 / 1;
+    object-fit: contain;
   }
   .face-feedback .expression-motion-face {
     width: 90px;
-    height: 90px;
+    max-width: 100%;
+    height: auto;
+    aspect-ratio: 1 / 1;
+    flex-shrink: 0;
   }
   .sign-empty,
   .sign-phrase-stage {
@@ -459,5 +509,1278 @@
   .sign-phrase-expanded .sign-phrase-stage {
     min-height: 120px;
     max-height: none;
+  }
+}
+
+/* --- Editorial Tactile Stage · Competition Signature Upgrades --- */
+
+.conversation-workspace .conversation-capture {
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.95) 0%, rgba(2, 6, 23, 0.98) 100%);
+  border: 1px solid rgba(51, 65, 85, 0.7);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 12px 32px -16px rgba(0, 0, 0, 0.6);
+}
+
+.conversation-workspace .conversation-capture > .conversation-video {
+  border-radius: 14px;
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  box-shadow:
+    0 0 0 2px rgba(15, 23, 42, 0.9),
+    0 0 0 3px rgba(16, 185, 129, 0.25),
+    0 12px 28px -12px rgba(0, 0, 0, 0.65);
+}
+
+.session-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: rgba(30, 41, 59, 0.8);
+  border: 1px solid rgba(51, 65, 85, 0.7);
+  color: #94a3b8;
+  font-weight: 500;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.session-status-listening {
+  background: rgba(16, 185, 129, 0.15);
+  border-color: rgba(52, 211, 153, 0.5);
+  color: #34d399;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2), 0 0 16px rgba(16, 185, 129, 0.25);
+}
+
+.session-status-processing {
+  background: rgba(245, 158, 11, 0.15);
+  border-color: rgba(245, 158, 11, 0.5);
+  color: #fbbf24;
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.18);
+}
+
+.vad-bars {
+  display: inline-flex;
+  align-items: center;
+  gap: 2.5px;
+  height: 14px;
+  margin-left: 2px;
+}
+
+.vad-bars > i {
+  display: block;
+  width: 3px;
+  height: 5px;
+  border-radius: 999px;
+  background: currentColor;
+  opacity: 0.35;
+  transition:
+    height 150ms ease,
+    opacity 150ms ease;
+}
+
+.session-status-listening .vad-bars > i {
+  opacity: 0.9;
+  animation: vad-bar-pulse 640ms ease-in-out infinite alternate;
+}
+
+.session-status-listening .vad-bars > i:nth-child(1) {
+  height: 7px;
+  animation-delay: 0ms;
+}
+.session-status-listening .vad-bars > i:nth-child(2) {
+  height: 13px;
+  animation-delay: 120ms;
+}
+.session-status-listening .vad-bars > i:nth-child(3) {
+  height: 10px;
+  animation-delay: 240ms;
+}
+.session-status-listening .vad-bars > i:nth-child(4) {
+  height: 6px;
+  animation-delay: 360ms;
+}
+
+@keyframes vad-bar-pulse {
+  0% {
+    transform: scaleY(0.65);
+  }
+  100% {
+    transform: scaleY(1.15);
+  }
+}
+
+.face-observation-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: rgba(30, 41, 59, 0.85);
+  border: 1px solid rgba(51, 65, 85, 0.7);
+  font-size: 14px;
+  font-weight: 500;
+  color: #94a3b8;
+}
+
+.face-observation-pill.face-observation-active {
+  background: rgba(16, 185, 129, 0.15);
+  border-color: rgba(52, 211, 153, 0.5);
+  color: #34d399;
+}
+
+.face-observation-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: #f59e0b;
+  flex-shrink: 0;
+}
+
+.face-observation-pill.face-observation-active .face-observation-dot {
+  background: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.35);
+}
+
+/* Active Dialogue Card linked to Sign Stage */
+.caption-entry-sign-active {
+  border-color: #10b981 !important;
+  background: linear-gradient(90deg, rgba(16, 185, 129, 0.16) 0%, rgba(15, 23, 42, 0.96) 100%) !important;
+  box-shadow:
+    inset 4px 0 0 #10b981,
+    0 8px 24px -10px rgba(16, 185, 129, 0.4);
+}
+
+.caption-sign-btn-active {
+  background: #10b981 !important;
+  color: #020617 !important;
+  border-color: #10b981 !important;
+  font-weight: 600;
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.4);
+}
+
+/* Sign Stage Header & Speed Control */
+.sign-phrase-title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.sign-category-badge {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.35);
+}
+
+.sign-category-badge.sign-cat-health {
+  background: rgba(244, 63, 94, 0.15);
+  color: #fb7185;
+  border-color: rgba(244, 63, 94, 0.35);
+}
+
+.sign-category-badge.sign-cat-daily {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
+  border-color: rgba(245, 158, 11, 0.35);
+}
+
+.sign-speed-btn.sign-speed-active {
+  background: #10b981;
+  color: #020617;
+  border-color: #10b981;
+  font-weight: 600;
+}
+
+/* Quick 1-Tap Scenario Strip */
+.quick-scenario-strip {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding: 12px;
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px dashed rgba(52, 211, 153, 0.35);
+}
+
+.quick-scenario-label {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #94a3b8;
+}
+
+.quick-scenario-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.quick-scenario-chip {
+  padding: 6px 11px;
+  border-radius: 999px;
+  border: 1px solid rgba(51, 65, 85, 0.7);
+  background: rgba(30, 41, 59, 0.8);
+  color: #f8fafc;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background-color 140ms ease,
+    border-color 140ms ease,
+    transform 140ms ease;
+}
+
+.quick-scenario-chip:hover {
+  background: rgba(16, 185, 129, 0.15);
+  border-color: #10b981;
+  color: #34d399;
+}
+
+.quick-scenario-chip.active {
+  background: #10b981;
+  color: #020617;
+  border-color: #10b981;
+  font-weight: 600;
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.4);
+}
+
+/* Tactile Morse Bar & Concentric Pulse Orb */
+.pulse-orb {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pulse-orb-ring {
+  position: absolute;
+  inset: -4px;
+  border-radius: 999px;
+  border: 2px solid rgba(31, 111, 84, 0.35);
+  opacity: 0;
+  transform: scale(0.88);
+  transition:
+    opacity 160ms ease,
+    transform 160ms ease;
+  pointer-events: none;
+}
+
+.pulse-orb.on .pulse-orb-ring {
+  opacity: 1;
+  transform: scale(1.12);
+}
+
+.rhythm-track-idle .idle-node {
+  opacity: 0.32;
+}
+
+/* --- WOW Centerpieces: 3D Tactile Stage, Telemetry Deck & Cinema Gallery --- */
+
+/* 1. Live Multimodal Telemetry Deck */
+.multimodal-deck {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.multimodal-node {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 16px;
+  border-radius: 14px;
+  background: linear-gradient(180deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0.9) 100%);
+  border: 1px solid rgba(51, 65, 85, 0.65);
+  box-shadow: 0 6px 16px -12px rgba(0, 0, 0, 0.5);
+  transition:
+    border-color 180ms ease,
+    background-color 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.multimodal-node.is-live {
+  background: linear-gradient(180deg, rgba(16, 185, 129, 0.15) 0%, rgba(15, 23, 42, 0.95) 100%);
+  border-color: rgba(52, 211, 153, 0.55);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 8px 24px -12px rgba(16, 185, 129, 0.35);
+}
+
+.multimodal-node-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #94a3b8;
+}
+
+.multimodal-node.is-live .multimodal-node-kicker {
+  color: #34d399;
+}
+
+.multimodal-pulse {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: #64748b;
+  flex-shrink: 0;
+}
+
+.multimodal-node.is-live .multimodal-pulse {
+  background: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.3);
+}
+
+.multimodal-node strong {
+  font-size: 15px;
+  font-weight: 600;
+  color: #f8fafc;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.multimodal-node small {
+  font-size: 12.5px;
+  color: #94a3b8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 2. 3D Avatar Studio Stage & Ambient Emotion Aura */
+.face-feedback {
+  position: relative;
+  overflow: hidden;
+  transition:
+    background 260ms ease,
+    border-color 260ms ease,
+    box-shadow 260ms ease;
+}
+
+.face-feedback.face-feedback-aura {
+  border-color: color-mix(in srgb, var(--emotion-aura, #10b981) 50%, rgba(51, 65, 85, 0.8));
+  background:
+    radial-gradient(
+      circle at 18% 28%,
+      color-mix(in srgb, var(--emotion-aura, #10b981) 22%, transparent) 0%,
+      transparent 64%
+    ),
+    linear-gradient(180deg, rgba(15, 23, 42, 0.95) 0%, rgba(2, 6, 23, 0.98) 100%);
+  box-shadow: 0 16px 36px -16px color-mix(in srgb, var(--emotion-aura, #10b981) 40%, rgba(0, 0, 0, 0.6));
+}
+
+.face-feedback-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.face-feedback-header h2 {
+  margin: 0 !important;
+}
+
+.tactile-reset-btn {
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(52, 211, 153, 0.4);
+  background: rgba(30, 41, 59, 0.8);
+  color: #34d399;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.tactile-reset-btn:hover {
+  background: rgba(16, 185, 129, 0.2);
+  color: #6ee7b7;
+}
+
+.face-feedback .face-illustration-3d {
+  flex: 0 0 120px;
+  width: 120px;
+  height: 120px;
+  border-radius: 20px;
+  background:
+    radial-gradient(
+      circle at 50% 42%,
+      color-mix(in srgb, var(--face-accent, #10b981) 34%, #0f172a) 0%,
+      #090f1f 68%,
+      #020617 100%
+    );
+  border: 1.5px solid color-mix(in srgb, var(--face-accent, #10b981) 62%, rgba(56, 189, 248, 0.35));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    0 0 24px -6px color-mix(in srgb, var(--face-accent, #10b981) 48%, rgba(6, 182, 212, 0.28)),
+    0 12px 26px -12px rgba(0, 0, 0, 0.78);
+  cursor: grab;
+}
+
+.face-feedback .face-illustration-3d:active {
+  cursor: grabbing;
+}
+
+/* HomePage 3D Interactive Stage */
+.home-3d-stage {
+  position: relative;
+  flex: 0 0 116px;
+  width: 116px;
+  height: 116px;
+  border-radius: 20px;
+  background: radial-gradient(circle at 50% 42%, rgba(16, 185, 129, 0.26) 0%, #090f1f 70%, #020617 100%);
+  border: 1.5px solid rgba(52, 211, 153, 0.5);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    0 0 24px -6px rgba(16, 185, 129, 0.4),
+    0 12px 24px -10px rgba(0, 0, 0, 0.72);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  cursor: grab;
+}
+
+.home-3d-stage .face-illustration-3d {
+  width: 100%;
+  height: 100%;
+}
+
+.home-3d-stage canvas {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain;
+}
+
+.home-3d-fallback {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.home-3d-stage canvas ~ .home-3d-fallback,
+.home-3d-stage .face-illustration-3d:has(canvas) ~ .home-3d-fallback {
+  opacity: 0;
+}
+
+/* 3. Live Tactile & 3D Soundboard */
+.tactile-soundboard {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed rgba(51, 65, 85, 0.72);
+}
+
+.tactile-soundboard-label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary, #94a3b8);
+}
+
+.tactile-soundboard-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.tactile-pill {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 34px;
+  padding: 5px 8px;
+  border-radius: 9px;
+  border: 1px solid rgba(51, 65, 85, 0.7);
+  background: rgba(30, 41, 59, 0.8);
+  color: #f8fafc;
+  font-size: 12.5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    border-color 150ms ease,
+    background-color 150ms ease,
+    transform 150ms ease,
+    box-shadow 150ms ease;
+}
+
+.tactile-pill:hover {
+  border-color: var(--pill-color, #10b981);
+  background: color-mix(in srgb, var(--pill-color, #10b981) 16%, rgba(30, 41, 59, 0.9));
+  color: #ffffff;
+}
+
+.tactile-pill.is-active {
+  border-color: var(--pill-color, #10b981);
+  background: color-mix(in srgb, var(--pill-color, #10b981) 28%, rgba(15, 23, 42, 0.95));
+  box-shadow: 0 0 14px color-mix(in srgb, var(--pill-color, #10b981) 40%, transparent);
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.tactile-pill-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--pill-color, #1f6f54);
+  flex-shrink: 0;
+}
+
+.tactile-pill-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 4. Cinema Sign Stage & Interactive Scenario Gallery */
+.sign-phrase-stage {
+  border-radius: 14px;
+  background: radial-gradient(circle at 50% 25%, #0f172a 0%, #020617 100%);
+  border: 1px solid rgba(51, 65, 85, 0.6);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 14px 28px -16px rgba(0, 0, 0, 0.6);
+}
+
+.sign-scenario-gallery {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 8px;
+  padding: 10px;
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.8) 0%, rgba(2, 6, 23, 0.9) 100%);
+  border: 1px solid rgba(51, 65, 85, 0.6);
+}
+
+.scenario-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 8px;
+  border-radius: 10px;
+  background: rgba(30, 41, 59, 0.7);
+  border: 1px solid rgba(51, 65, 85, 0.6);
+}
+
+.scenario-group-badge {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #34d399;
+}
+
+.scenario-group-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.scenario-card-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  width: 100%;
+  padding: 6px 8px;
+  border-radius: 8px;
+  border: 1px solid rgba(51, 65, 85, 0.6);
+  background: rgba(15, 23, 42, 0.8);
+  color: #f8fafc;
+  font-size: 12.5px;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color 140ms ease,
+    background-color 140ms ease,
+    transform 140ms ease;
+}
+
+.scenario-card-btn:hover {
+  border-color: #10b981;
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+}
+
+/* 5. Editorial Dialogue Cards with Turn Badges */
+.caption-entry-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.caption-turn-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 7px;
+  border-radius: 6px;
+  background: rgba(6, 182, 212, 0.15);
+  border: 1px solid rgba(6, 182, 212, 0.3);
+  color: #22d3ee;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11.5px;
+  font-weight: 700;
+}
+
+/* 6. Desktop & Laptop 100dvh Zero-Scroll Single-Viewport Cockpit */
+.camera-external-toolbar .video-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  background: rgba(15, 23, 42, 0.88);
+  color: #e2e8f0;
+}
+
+.camera-external-toolbar .video-switch:hover {
+  border-color: #22d3ee;
+  background: rgba(6, 182, 212, 0.16);
+  color: #ffffff;
+}
+
+.conversation-video .video-label {
+  font-size: 11.5px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: rgba(2, 6, 23, 0.76);
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(51, 65, 85, 0.65);
+  color: #cbd5e1;
+}
+
+.aside-drawers-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+@media (min-width: 900px) and (min-height: 540px) {
+  .app-shell.dashboard-100vh {
+    height: 100vh;
+    height: 100dvh;
+    max-height: 100vh;
+    max-height: 100dvh;
+    overflow: hidden;
+  }
+
+  .app-shell.dashboard-100vh .content-shell {
+    height: 100vh;
+    height: 100dvh;
+    max-height: 100dvh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .app-shell.dashboard-100vh .topbar {
+    flex: 0 0 46px;
+    height: 46px;
+    min-height: 46px;
+    padding: 0 18px;
+  }
+
+  .app-shell.dashboard-100vh main#main.conversation-workspace {
+    flex: 1 1 0;
+    min-height: 0;
+    max-width: 1600px;
+    width: 100%;
+    padding: 6px 16px 10px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .app-shell.dashboard-100vh .conversation-host:not([hidden]) {
+    flex: 1 1 0;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .conversation-top-bar {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    margin-bottom: 8px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid rgba(51, 65, 85, 0.55);
+  }
+
+  .conversation-top-bar .page-header {
+    margin: 0 !important;
+    padding: 0 !important;
+    flex: 0 0 auto;
+  }
+
+  .conversation-top-bar .page-header h1 {
+    font-size: 19px !important;
+    line-height: 1.15 !important;
+    margin: 1px 0 0 !important;
+  }
+
+  .conversation-top-bar .page-header p {
+    display: none;
+  }
+
+  .conversation-top-bar .multimodal-deck {
+    flex: 1 1 auto;
+    max-width: 780px;
+    margin: 0;
+    gap: 8px;
+  }
+
+  .conversation-top-bar .multimodal-node {
+    padding: 5px 10px;
+    border-radius: 10px;
+    gap: 1px;
+  }
+
+  .conversation-top-bar .multimodal-node-kicker {
+    font-size: 9.5px;
+  }
+
+  .conversation-top-bar .multimodal-node strong {
+    font-size: 12.5px;
+  }
+
+  .conversation-top-bar .multimodal-node small {
+    font-size: 10.5px;
+  }
+
+  .conversation-workspace .conversation-layout {
+    flex: 1 1 0;
+    min-height: 0;
+    height: 100%;
+    display: grid;
+    grid-template-columns: minmax(0, 1.08fr) minmax(356px, 0.96fr);
+    gap: 12px;
+    align-items: stretch;
+    overflow: hidden;
+  }
+
+  .conversation-workspace .conversation-main,
+  .conversation-workspace .conversation-aside {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+    gap: 10px;
+    overflow: hidden;
+  }
+
+  /* Top-Left Quadrant: Non-Occluding Camera Dock & External Studio Controls */
+  .conversation-workspace .conversation-capture {
+    flex: 0 0 auto;
+    padding: 10px 12px;
+    gap: 6px 12px;
+    position: relative;
+    overflow: visible;
+    z-index: 20;
+  }
+
+  .conversation-workspace .conversation-capture > .conversation-video {
+    grid-column: 1;
+    grid-row: 1 / span 2;
+    height: clamp(118px, 18.5dvh, 168px);
+    min-height: 116px;
+    max-height: 168px;
+  }
+
+  .conversation-workspace .consent-line {
+    margin: 0;
+    min-height: 26px;
+    font-size: 12.5px;
+    line-height: 1.35;
+  }
+
+  .conversation-workspace .session-start-btn,
+  .conversation-workspace .conversation-audio-group .button {
+    min-height: 34px;
+    padding: 5px 10px;
+    font-size: 13px;
+  }
+
+  .conversation-workspace .session-status {
+    padding: 5px 11px;
+    font-size: 12.5px;
+  }
+
+  .face-observation {
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 10px;
+  }
+
+  .face-observation > p {
+    min-height: 26px;
+    padding: 3px 10px;
+    font-size: 12.5px;
+  }
+
+  .face-observation details.diagnostics {
+    margin: 0;
+  }
+
+  .face-observation details.diagnostics > summary {
+    min-height: 26px;
+    font-size: 12px;
+    color: #94a3b8;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .face-observation details.diagnostics[open] .diagnostics-popover-body {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    right: 0;
+    max-height: min(55dvh, 380px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    z-index: 55;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: rgba(2, 6, 23, 0.97);
+    backdrop-filter: blur(14px);
+    border: 1px solid rgba(56, 189, 248, 0.38);
+    box-shadow: 0 20px 42px -12px rgba(0, 0, 0, 0.85);
+    font-size: 12.5px;
+  }
+
+  .conversation-save {
+    padding: 3px 10px;
+    border-radius: 10px;
+  }
+
+  .conversation-save .checkbox-label {
+    min-height: 28px;
+    font-size: 12.5px;
+  }
+
+  .save-status {
+    font-size: 12.5px;
+  }
+
+  .conversation-capture .model-readiness {
+    margin: 2px 0 0;
+    font-size: 12.5px;
+  }
+
+  /* Bottom-Left Quadrant: Flex-Bounded Live Dialogue Captions */
+  .conversation-workspace .caption-panel {
+    flex: 1 1 0;
+    min-height: 0;
+    padding: 12px 16px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .conversation-workspace .caption-panel > header {
+    flex: 0 0 auto;
+    margin-bottom: 8px;
+    padding-bottom: 6px;
+  }
+
+  .conversation-workspace .caption-scroll {
+    flex: 1 1 0 !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  /* Top-Right Quadrant: 3D GLSL Fluid Orb Stage + 6 Tactile Pills */
+  .conversation-aside > .face-feedback {
+    flex: 0 0 auto;
+    padding: 10px 14px;
+    overflow: visible;
+    z-index: 25;
+  }
+
+  .face-feedback-header {
+    margin-bottom: 6px;
+  }
+
+  .face-feedback-header h2 {
+    font-size: 15.5px;
+  }
+
+  .face-feedback-bento {
+    display: grid;
+    grid-template-columns: minmax(0, 1.04fr) minmax(0, 1fr);
+    gap: 10px;
+    align-items: center;
+  }
+
+  .face-feedback .face-illustration {
+    position: relative;
+  }
+
+  .face-feedback .face-illustration-stage {
+    padding: 6px 8px;
+    gap: 10px;
+    margin-block: 0 2px;
+  }
+
+  .face-feedback .face-illustration-3d {
+    flex: 0 0 clamp(94px, 13.5dvh, 114px);
+    width: clamp(94px, 13.5dvh, 114px);
+    height: clamp(94px, 13.5dvh, 114px);
+  }
+
+  .face-feedback .expression-motion-face {
+    width: 82px;
+  }
+
+  .face-feedback .emotion-color-legend {
+    position: relative;
+  }
+
+  .face-feedback .emotion-color-legend summary {
+    min-height: 24px;
+    font-size: 12px;
+    color: #94a3b8;
+  }
+
+  .face-feedback .emotion-color-legend[open] .legend-popover-body {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    width: min(340px, 42vw);
+    z-index: 60;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: rgba(2, 6, 23, 0.97);
+    backdrop-filter: blur(14px);
+    border: 1px solid rgba(52, 211, 153, 0.38);
+    box-shadow: 0 20px 42px -12px rgba(0, 0, 0, 0.85);
+  }
+
+  .face-feedback-controls .haptic-display.haptic-compact {
+    margin: 0 0 4px;
+  }
+
+  .face-feedback-controls .tactile-soundboard {
+    margin-top: 4px;
+    padding-top: 5px;
+  }
+
+  .face-feedback-controls .tactile-pill {
+    min-height: 30px;
+    padding: 4px 7px;
+    font-size: 12px;
+  }
+
+  /* Middle-Right Quadrant: VSL Sign Language Stage Always Visible Above the Fold */
+  .conversation-aside > .sign-panel {
+    flex: 1 1 0;
+    min-height: 0;
+    padding: 10px 14px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .sign-panel h2 {
+    flex: 0 0 auto;
+    font-size: 16px;
+    margin-bottom: 6px;
+  }
+
+  .sign-idle-stage {
+    flex: 1 1 0;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .sign-empty {
+    flex: 0 0 auto;
+    height: auto;
+    min-height: 52px;
+    padding: 8px 12px;
+  }
+
+  .sign-empty p {
+    font-size: 14px;
+    margin: 0 0 2px;
+    color: #e2e8f0;
+  }
+
+  .sign-empty small {
+    font-size: 12px;
+    line-height: 1.35;
+  }
+
+  .sign-scenario-gallery {
+    flex: 1 1 auto;
+    min-height: 0;
+    margin-top: 0;
+    padding: 8px;
+    gap: 8px;
+    align-content: start;
+    overflow-y: auto;
+  }
+
+  .sign-phrase-card {
+    flex: 1 1 0;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: visible;
+    position: relative;
+  }
+
+  .sign-panel.is-playing > h2 {
+    margin-bottom: 4px;
+    font-size: 14.5px;
+  }
+
+  .sign-phrase-header {
+    flex: 0 0 auto;
+    margin-bottom: 4px;
+    gap: 8px;
+  }
+
+  .sign-phrase-title-group {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 8px;
+    min-width: 0;
+  }
+
+  .sign-phrase-header p {
+    font-size: 14.5px;
+    font-weight: 600;
+    line-height: 1.25;
+  }
+
+  .sign-phrase-header .icon-button {
+    min-width: 30px;
+    min-height: 30px;
+  }
+
+  .sign-phrase-stage {
+    flex: 1 1 0;
+    height: auto;
+    min-height: 132px;
+    max-height: none;
+  }
+
+  .sign-player-controls {
+    flex: 0 0 auto;
+    margin: 5px 0 2px;
+    gap: 5px;
+    flex-wrap: nowrap;
+  }
+
+  .sign-player-controls > button {
+    min-height: 30px;
+    padding: 3px 7px;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+
+  .sign-phrase-card > small {
+    display: inline-block;
+    flex: 0 0 auto;
+    font-size: 11px;
+    line-height: 1.2;
+    opacity: 0.8;
+  }
+
+  .sign-source {
+    flex: 0 0 auto;
+    margin-top: 1px;
+    position: relative;
+  }
+
+  .sign-source summary {
+    min-height: 20px;
+    font-size: 11px;
+    color: #94a3b8;
+  }
+
+  .sign-source[open] p {
+    font-size: 11.5px;
+    margin: 2px 0;
+  }
+
+  .sign-panel .quick-phrase-picker {
+    flex: 0 0 auto;
+    margin-top: 4px;
+  }
+
+  .sign-panel .quick-scenario-strip {
+    display: none;
+  }
+
+  .quick-scenario-strip {
+    padding: 5px 8px;
+    margin-bottom: 4px;
+    gap: 4px;
+  }
+
+  .quick-scenario-chips {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: thin;
+  }
+
+  .quick-scenario-chip {
+    white-space: nowrap;
+    padding: 4px 9px;
+    font-size: 12px;
+  }
+
+  .quick-phrase-toggle {
+    min-height: 34px;
+    padding: 6px 10px;
+    border-radius: 9px;
+    background: rgba(16, 185, 129, 0.12);
+    border: 1px solid rgba(52, 211, 153, 0.35);
+    color: #34d399;
+    font-size: 12.5px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .quick-phrase-toggle:hover {
+    background: rgba(16, 185, 129, 0.2);
+    border-color: #10b981;
+  }
+
+  .sign-panel .quick-phrase-content {
+    position: absolute;
+    inset: 38px 10px 48px 10px;
+    z-index: 45;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 12px;
+    border-radius: 12px;
+    background: rgba(2, 6, 23, 0.97);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(52, 211, 153, 0.42);
+    box-shadow: 0 20px 44px -12px rgba(0, 0, 0, 0.88);
+  }
+
+  /* Bottom-Right: Compact Upward-Floating Collapsible Drawers (0px Layout Push) */
+  .aside-drawers-row {
+    flex: 0 0 auto;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 8px;
+    position: relative;
+    z-index: 35;
+  }
+
+  .aside-drawers-row > .card {
+    padding: 0 12px !important;
+    margin: 0;
+    border-radius: 10px;
+    background: rgba(15, 23, 42, 0.88);
+    border: 1px solid rgba(51, 65, 85, 0.72);
+  }
+
+  .aside-drawers-row details > summary {
+    min-height: 34px !important;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #cbd5e1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .aside-drawers-row details[open] > summary {
+    color: #34d399;
+  }
+
+  .aside-drawers-row details[open] .drawer-popover-body {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 0;
+    right: 0;
+    max-height: min(62dvh, 460px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    z-index: 65;
+    padding: 14px 16px;
+    border-radius: 14px;
+    background: rgba(2, 6, 23, 0.97);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(52, 211, 153, 0.42);
+    box-shadow: 0 24px 48px -12px rgba(0, 0, 0, 0.88);
+  }
+}
+
+@media (min-width: 1024px) and (max-width: 1360px) and (min-height: 540px) {
+  .app-shell.dashboard-100vh .sidebar {
+    width: 224px;
+    padding: 20px 14px;
+  }
+
+  .app-shell.dashboard-100vh .content-shell {
+    margin-left: 224px;
+    width: calc(100% - 224px);
+  }
+}
+
+@media (max-width: 899px) {
+  .multimodal-deck {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .sign-scenario-gallery {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .aside-drawers-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .session-status-listening .vad-bars > i {
+    animation: none;
+  }
+  .pulse-orb-ring {
+    transition: none;
   }
 }

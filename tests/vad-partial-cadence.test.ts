@@ -52,3 +52,23 @@ it.each([
     ).toEqual([94 * 512]);
   },
 );
+
+it('suppresses interim snapshots when interims=false while preserving final chunk delivery', async () => {
+  vi.resetModules();
+  const posted: { type: string; samples?: Float32Array }[] = [];
+  const scope = {
+    onmessage: null as unknown as (event: { data: object }) => void,
+    postMessage: (data: (typeof posted)[number]) => posted.push(data),
+  };
+  vi.stubGlobal('self', scope);
+  await import('../src/infrastructure/inference/vad.worker');
+  scope.onmessage({ data: { type: 'init', interims: false, earlyPartials: false, streaming: false } });
+  for (let i = 0; i < 40; i++)
+    scope.onmessage({
+      data: { type: 'frame', samples: new Float32Array(512).fill(0.1), offset: i * 512 },
+    });
+  scope.onmessage({ data: { type: 'flush' } });
+  await vi.waitFor(() => expect(posted.some((item) => item.type === 'flushed')).toBe(true));
+  expect(posted.filter((item) => item.type === 'interim')).toHaveLength(0);
+  expect(posted.filter((item) => item.type === 'chunk')).toHaveLength(1);
+});

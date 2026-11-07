@@ -28,7 +28,13 @@ self.onmessage = async ({ data }) => {
         const prepared = await adapter.prepare();
         const prepareMs = performance.now() - started;
         const segment = await adapter.acceptPcm(
-          { id: 'comparison', samples: pcm.slice(), startMs: 0, endMs: pcm.length / 16 },
+          {
+            id: 'comparison',
+            samples: pcm.slice(),
+            startMs: 0,
+            endMs: pcm.length / 16,
+            gainNormalization: data.gainNormalization ?? true,
+          },
           true,
         );
         rows.push({
@@ -41,6 +47,8 @@ self.onmessage = async ({ data }) => {
           rtf: segment.processingMs / (pcm.length / 16),
           metrics: data.reference.trim() ? speechError(data.reference, segment.text) : null,
           text: segment.text,
+          dialect: data.dialect,
+          gainNormalization: data.gainNormalization ?? true,
         });
       } catch {
         rows.push({ profile, status: 'unavailable' });

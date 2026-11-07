@@ -14,6 +14,7 @@ import {
   Zap,
 } from 'lucide-react';
 import { DemoPlayer } from './DemoPlayer';
+import { AvatarPanel } from '../conversation/AvatarPanel';
 import { expressionUI, expressions, type Expression } from '../../shared/contracts';
 import {
   retryModelPreparation,
@@ -53,6 +54,8 @@ export function HomePage({
   const preparation = usePreparationStatus();
   const loading = preparation.preparing || preparing;
   const [selectedExpression, setSelectedExpression] = useState<Expression | null>('happy');
+  const [avatar3DFailed, setAvatar3DFailed] = useState(false);
+  const [avatarReplay, setAvatarReplay] = useState(0);
   const [soundFeedback, setSoundFeedback] = useState(true);
 
   useEffect(() => {
@@ -104,16 +107,16 @@ export function HomePage({
       {/* Hero Metrics Strip */}
       <div className="hero-metrics-strip">
         <span className="hero-metric-item">
-          <ShieldCheck size={14} /> Riêng tư trên thiết bị
+          <ShieldCheck size={14} /> 100% Xử lý trên thiết bị · Edge AI
         </span>
         <span className="hero-metric-item">
-          <Zap size={14} /> Phụ đề tiếng Việt
+          <Zap size={14} /> Phụ đề tiếng Việt tức thì
         </span>
         <span className="hero-metric-item">
-          <Eye size={14} /> Dễ đọc Deaf-First
+          <Eye size={14} /> 100 Mẫu ký hiệu VSL
         </span>
         <span className="hero-metric-item">
-          <Waves size={14} /> Nhịp gợi ý
+          <Waves size={14} /> 6 Mã nhịp xúc giác
         </span>
       </div>
 
@@ -246,8 +249,9 @@ export function HomePage({
       <section className="card settings-card" aria-label="Cách đọc gợi ý sắc thái">
         <h2>Đọc lời nói, xem gợi ý sắc thái</h2>
         <p>
-          Đầu 3D minh họa nét mặt hiện tại bằng chuyển động mắt, mày và miệng. Icon, tên và màu giúp
-          nhận biết nhanh; đây là gợi ý thử nghiệm, không khẳng định cảm xúc thật.
+          Quả cầu Cảm xúc 3D minh họa sắc thái hiện tại bằng sóng năng lượng, màu sắc và nhịp chuyển
+          động. Icon, tên và màu giúp nhận biết nhanh; đây là gợi ý thử nghiệm, không khẳng định cảm
+          xúc thật.
         </p>
         <p>
           Chữ phụ đề giữ màu tối để dễ đọc. Nhãn và viền cạnh một câu chỉ phản ánh tổng hợp của đúng
@@ -284,11 +288,13 @@ export function HomePage({
                 aria-label={`Xem chi tiết sắc thái ${expressionUI[label].name}`}
                 onClick={() => {
                   setSelectedExpression(label);
+                  setAvatarReplay((v) => v + 1);
                   playPattern(label);
                 }}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
                     setSelectedExpression(label);
+                    setAvatarReplay((v) => v + 1);
                     playPattern(label);
                   }
                 }}
@@ -309,9 +315,30 @@ export function HomePage({
         {selectedExpression && (
           <div className="palette-detail-box" role="status" aria-live="polite">
             <div className="palette-detail-info">
-              <span className="palette-detail-icon" aria-hidden="true">
-                {expressionUI[selectedExpression].icon}
-              </span>
+              <div className="home-3d-stage" title="Di chuột để xoay góc nhìn 3D">
+                {!avatar3DFailed ? (
+                  <AvatarPanel
+                    expression={selectedExpression}
+                    active
+                    audioVolume={haptic.visual.playing && haptic.visual.active ? 0.65 : 0}
+                    reduced={
+                      window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false
+                    }
+                    replay={avatarReplay}
+                    fallback={
+                      <span className="palette-detail-icon" aria-hidden="true">
+                        {expressionUI[selectedExpression].icon}
+                      </span>
+                    }
+                    onUnavailable={() => setAvatar3DFailed(true)}
+                    onReady={() => {}}
+                  />
+                ) : (
+                  <span className="palette-detail-icon" aria-hidden="true">
+                    {expressionUI[selectedExpression].icon}
+                  </span>
+                )}
+              </div>
               <div className="palette-detail-text">
                 <h3 style={{ color: expressionUI[selectedExpression].color }}>
                   Sắc thái: {expressionUI[selectedExpression].name} ·{' '}

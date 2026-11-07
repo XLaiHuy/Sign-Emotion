@@ -13,10 +13,12 @@ it('renders toggle button and expands 100 phrases on click', () => {
   });
   expect(toggleBtn).toBeInTheDocument();
   expect(screen.queryByRole('tablist')).toBeNull();
+  expect(screen.getByLabelText('Câu mẫu thử nhanh')).toBeInTheDocument();
 
   // Expand
   fireEvent.click(toggleBtn);
   expect(screen.getByRole('tablist')).toBeInTheDocument();
+  expect(screen.queryByLabelText('Câu mẫu thử nhanh')).toBeNull();
 
   // Check tabs
   expect(screen.getByText(/Giao tiếp/)).toBeInTheDocument();

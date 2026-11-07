@@ -7,9 +7,9 @@ export interface OptionalMediaAsset {
   contentType: 'video/mp4' | 'text/vtt';
 }
 export const introVideo: OptionalMediaAsset = {
-  url: '/demo/signemo-preview-c65a1142bfb0.mp4',
-  bytes: 3369657,
-  sha256: 'c65a1142bfb082d0aba306af05e6339de927194be4f47093586e56349f206993',
+  url: '/demo/signemo-preview-24836d1d4c17.mp4',
+  bytes: 2512668,
+  sha256: '24836d1d4c17f8f8c1ba3953316b87d736f89d7217315f7956a9bc11e2ce90af',
   contentType: 'video/mp4',
 };
 export const introCaptions: OptionalMediaAsset = {
@@ -20,9 +20,9 @@ export const introCaptions: OptionalMediaAsset = {
 };
 export const introYouTube = {
   longId: 'E6AGaW7wE7k',
-  shortId: '7f1qlS8Y9gQ',
+  shortId: 'jT6cjQ0aQhI',
   longUrl: 'https://www.youtube.com/watch?v=E6AGaW7wE7k',
-  shortUrl: 'https://www.youtube.com/watch?v=7f1qlS8Y9gQ',
+  shortUrl: 'https://www.youtube.com/watch?v=jT6cjQ0aQhI',
   embedUrl: 'https://www.youtube.com/embed/E6AGaW7wE7k?autoplay=1&rel=0',
 };
 export interface SignVideoAsset extends OptionalMediaAsset {

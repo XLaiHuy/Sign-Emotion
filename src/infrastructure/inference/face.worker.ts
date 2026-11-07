@@ -2,9 +2,12 @@
 import { FaceLandmarker, FilesetResolver, type NormalizedLandmark } from '@mediapipe/tasks-vision';
 import type * as Ort from 'onnxruntime-web/wasm';
 import { MODEL_VERSION, type InferenceResult, type QualityReason } from '../../shared/contracts';
-import { softmax } from '../../domain/face/prediction';
+import { applyBlendshapePrior, softmax } from '../../domain/face/prediction';
 import { faceImageQuality } from '../../domain/face/quality';
-import { estimateHeadPose, isSupportedHeadPose } from '../../domain/face/pose';
+import { estimateHeadPose } from '../../domain/face/pose';
+import { faceCrop } from '../../domain/face/crop';
+import { applyLowLightGamma, faceImageStats } from '../../domain/face/lighting';
+import { faceExperimentConfig } from '../../domain/face/experiments';
 import { FEATURE_NAMES, auxiliaryManifestSchema, type AuxiliaryArtifact } from './auxiliary';
 import { toEmotiEffInput, toSignEmoEmotionOrder } from './emotieff-model';
 import { warmClassifier } from './warmClassifier';
@@ -35,12 +38,17 @@ let rgbInput = new Float32Array(3 * 260 * 260);
 const qualityInput = new Float32Array(64 * 64);
 const gpuCanvas = new OffscreenCanvas(1, 1);
 let modelVersion: string = MODEL_VERSION;
+let experiment = faceExperimentConfig(undefined, false, self.location.hostname);
 async function init(
   candidate?: AuxiliaryArtifact,
   research = false,
   profile: FaceModelProfile = 'product',
   delegate: 'CPU' | 'GPU' = 'CPU',
+  experimentId?: unknown,
 ) {
+  experiment = faceExperimentConfig(experimentId, research, self.location.hostname);
+  if (experimentId !== undefined && (profile !== 'product' || candidate || delegate !== 'CPU'))
+    throw new Error('Lượt thử chỉ dùng B2, detector CPU và không dùng model phụ');
   const contract = faceProfileContract(profile);
   if (profile !== 'product' && !research) throw new Error('Profile mặt không hợp lệ');
   if (contract.backend === 'webgpu') {
@@ -60,7 +68,12 @@ async function init(
   modelVersion = profile === 'product' ? MODEL_VERSION : `${contract.version}-${contract.backend}`;
   faceCanvas.width = faceCanvas.height = classifierSize;
   ort.env.wasm.wasmPaths = `${self.location.origin}${contract.backend === 'webgpu' ? '/research/runtime-ort-gpu/' : '/runtime/ort/'}`;
-  ort.env.wasm.numThreads = 1;
+  ort.env.wasm.numThreads =
+    self.crossOriginIsolated &&
+    typeof SharedArrayBuffer !== 'undefined' &&
+    (self.navigator?.hardwareConcurrency ?? 1) >= 4
+      ? 2
+      : 1;
   ort.env.wasm.proxy = false;
   const fileset = await FilesetResolver.forVisionTasks('/runtime/mediapipe');
   // MediaPipe's UMD loader falls back to import() in module workers, where a
@@ -77,11 +90,9 @@ async function init(
       // for a frame when a second person enters. Prefer abstention over speed.
       runningMode: 'IMAGE',
       numFaces: 2,
-      // The B2 trial changes only the classifier; do not add blendshape work
-      // compared with the realtime B0 control. Legacy feature extraction stays explicit.
-      outputFaceBlendshapes: Boolean(candidate) || (research && profile === 'product'),
+      outputFaceBlendshapes: true,
       outputFacialTransformationMatrixes: true,
-      minFaceDetectionConfidence: 0.6,
+      minFaceDetectionConfidence: experiment.detectionConfidence,
       minFacePresenceConfidence: 0.6,
     },
   );
@@ -119,22 +130,8 @@ function alignedCrop(
   pose: ReturnType<typeof estimateHeadPose>,
   source: ImageBitmap,
 ): QualityReason | null {
-  const xs = points.map((p) => p.x * canvas.width);
-  const ys = points.map((p) => p.y * canvas.height);
-  const minX = Math.min(...xs),
-    maxX = Math.max(...xs),
-    minY = Math.min(...ys),
-    maxY = Math.max(...ys);
-  if (maxX - minX < 90 || maxY - minY < 90) return 'face-too-small';
-  if (minX < 0 || minY < 0 || maxX > canvas.width || maxY > canvas.height) return 'face-outside';
-  if (!pose || !isSupportedHeadPose(pose)) return 'face-angle';
-  const angle = (pose.roll * Math.PI) / 180;
-  // Detection remains bounded; crop from the source preserves available detail.
-  const sourceMinX = (minX * source.width) / canvas.width;
-  const sourceMaxX = (maxX * source.width) / canvas.width;
-  const sourceMinY = (minY * source.height) / canvas.height;
-  const sourceMaxY = (maxY * source.height) / canvas.height;
-  const side = Math.max(sourceMaxX - sourceMinX, sourceMaxY - sourceMinY) * 1.08;
+  const crop = faceCrop(points, pose, canvas, source, experiment.id === 'eye-crop');
+  if (typeof crop === 'string') return crop;
   for (const [cropContext, size] of [
     [faceContext, classifierSize],
     [qualityContext, 64],
@@ -143,9 +140,9 @@ function alignedCrop(
     cropContext.fillStyle = '#808080';
     cropContext.fillRect(0, 0, size, size);
     cropContext.translate(size / 2, size / 2);
-    cropContext.scale(size / side, size / side);
-    cropContext.rotate(-angle);
-    cropContext.drawImage(source, -(sourceMinX + sourceMaxX) / 2, -(sourceMinY + sourceMaxY) / 2);
+    cropContext.scale(size / crop.side, size / crop.side);
+    cropContext.rotate(-crop.angle);
+    cropContext.drawImage(source, -crop.centerX, -crop.centerY);
     cropContext.restore();
   }
   return null;
@@ -183,6 +180,12 @@ async function infer(
     scores: [],
     ...(Number.isFinite(captureMs) ? { captureMs } : {}),
     stages: { detectionMs: 0, cropMs: 0, classifierMs: 0 },
+    imageDiagnostics: {
+      inputSize: classifierSize,
+      preprocessingVersion: experiment.preprocessingVersion,
+      experiment: experiment.id,
+      gammaApplied: false,
+    },
   };
   try {
     if (!detector || !session) throw new Error('Model chưa sẵn sàng');
@@ -205,39 +208,17 @@ async function infer(
       result.qualityReason = alignedCrop(faces[0], pose, bitmap) ?? undefined;
       if (!result.qualityReason) {
         const rgba = qualityContext.getImageData(0, 0, 64, 64).data;
-        const input = qualityInput;
-        let mean = 0,
-          squared = 0;
-        for (let i = 0; i < input.length; i++) {
-          const v = 0.299 * rgba[i * 4] + 0.587 * rgba[i * 4 + 1] + 0.114 * rgba[i * 4 + 2];
-          input[i] = v;
-          mean += v;
-          squared += v * v;
-        }
-        mean /= input.length;
-        const std = Math.sqrt(Math.max(0, squared / input.length - mean * mean));
-        let laplacian = 0;
-        let laplacianSquared = 0;
-        let laplacianCount = 0;
-        for (let y = 1; y < 63; y++) {
-          for (let x = 1; x < 63; x++) {
-            const i = y * 64 + x;
-            const value =
-              4 * input[i] - input[i - 1] - input[i + 1] - input[i - 64] - input[i + 64];
-            laplacian += value;
-            laplacianSquared += value * value;
-            laplacianCount++;
-          }
-        }
-        const laplacianVariance =
-          laplacianSquared / laplacianCount - (laplacian / laplacianCount) ** 2;
-        const quality = faceImageQuality(mean, std, laplacianVariance);
+        const stats = faceImageStats(rgba, qualityInput);
+        Object.assign(result.imageDiagnostics!, stats);
+        const quality = faceImageQuality(stats.brightness, stats.contrast, stats.sharpness);
         result.qualityReason = quality.rejected;
         result.qualityWarning = quality.warning;
         if (!result.qualityReason) {
           result.stages!.cropMs = performance.now() - cropStarted;
           const classifierStarted = performance.now();
           const modelRgba = faceContext.getImageData(0, 0, classifierSize, classifierSize).data;
+          if (experiment.id === 'low-light')
+            result.imageDiagnostics!.gammaApplied = applyLowLightGamma(modelRgba, stats);
           const tensor = new ort.Tensor(
             'float32',
             toEmotiEffInput(modelRgba, classifierSize, classifierSize, rgbInput),
@@ -247,12 +228,16 @@ async function infer(
           try {
             outputs = await session.run({ [session.inputNames[0]]: tensor });
             result.stages!.classifierMs = performance.now() - classifierStarted;
-            result.scores = softmax(
+            const rawScores = softmax(
               toSignEmoEmotionOrder(outputs[session.outputNames[0]].data as Float32Array),
             );
+            const categories = detected.faceBlendshapes?.[0]?.categories;
+            result.scores =
+              categories && experiment.id === 'baseline' && !auxiliarySession
+                ? applyBlendshapePrior(rawScores, categories)
+                : rawScores;
             result.status = 'valid';
             result.observationUsable = true;
-            const categories = detected.faceBlendshapes?.[0]?.categories;
             if (categories && (captureFeatures || auxiliarySession)) {
               const map = new Map(categories.map((c) => [c.categoryName, c.score]));
               const features = FEATURE_NAMES.map((name) => map.get(name) ?? NaN);
@@ -293,6 +278,7 @@ self.onmessage = async (event: MessageEvent) => {
         message.research,
         message.faceProfile,
         message.research === true && message.detectorDelegate === 'GPU' ? 'GPU' : 'CPU',
+        message.faceExperiment,
       );
     if (message.type === 'frame')
       await infer(

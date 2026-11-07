@@ -75,6 +75,7 @@ interface ActiveSession {
   timer?: ReturnType<typeof setTimeout>;
   finishTimer?: ReturnType<typeof setTimeout>;
   emotionTimer?: ReturnType<typeof setTimeout>;
+  unclearTimer?: ReturnType<typeof setTimeout>;
   flushing: boolean;
   flushed: boolean;
   finishResolve?: () => void;
@@ -253,13 +254,18 @@ export function useConversation(
         try {
           await makeWorkerReady(asr, { type: 'init', profile }, abort.signal);
           asr.removeEventListener('message', onSpeechModelReady);
+          const supportsInterims =
+            profile === 'moonshine-streaming-vi-research' || profile === 'gipformer-research';
           await makeWorkerReady(
             vad,
             {
               type: 'init',
-              earlyPartials: profile === 'gipformer-research',
-              streaming: profile === 'moonshine-streaming-vi-research',
+              interims: supportsInterims,
+              earlyPartials: supportsInterims,
+              streaming: supportsInterims,
               fastEndpointing: true,
+              silenceHangoverFrames: 16,
+              maxFrames: 375,
             },
             abort.signal,
           );
@@ -312,6 +318,7 @@ export function useConversation(
       clearTimeout(session.timer);
       clearTimeout(session.finishTimer);
       clearTimeout(session.emotionTimer);
+      clearTimeout(session.unclearTimer);
       session.finishResolve?.();
     }
     setState('idle');
@@ -522,6 +529,14 @@ export function useConversation(
         if (session.pendingEmotion && !session.tone) decide(session.pendingEmotion.segment, []);
         session.pendingEmotion = job;
       };
+      const shouldNormalizeSpeechGain = (task: Task) => {
+        const q = task.quality;
+        if (!q) return false;
+        if (q.clippingRatio > 0.02) return false;
+        if (q.speechRms < 0.006) return false;
+        if (q.noiseMeasured && q.noiseRms > 0 && q.speechRms < q.noiseRms * 1.45) return false;
+        return true;
+      };
       const processInterim = () => {
         if (
           !current() ||
@@ -538,7 +553,11 @@ export function useConversation(
         session.pendingInterim = undefined;
         session.interimCurrent = task;
         const samples = task.samples.slice();
-        session.asr.postMessage({ type: 'interim', ...task, samples }, [samples.buffer]);
+        const gainNormalization = shouldNormalizeSpeechGain(task);
+        session.asr.postMessage(
+          { type: 'interim', ...task, gainNormalization, samples },
+          [samples.buffer],
+        );
         clearTimeout(session.timer);
         session.timer = setTimeout(() => {
           emitAudit('worker-failed', { branch: 'speech', reason: 'timeout' });
@@ -561,7 +580,11 @@ export function useConversation(
         setWorkload(session.load.snapshot(session.queue, performance.now()));
         setStatus('Đang chuyển lời nói thành văn bản…');
         const samples = task.samples.slice();
-        session.asr.postMessage({ type: 'transcribe', ...task, samples }, [samples.buffer]);
+        const gainNormalization = shouldNormalizeSpeechGain(task);
+        session.asr.postMessage(
+          { type: 'transcribe', ...task, gainNormalization, samples },
+          [samples.buffer],
+        );
         clearTimeout(session.timer);
         session.timer = setTimeout(() => {
           emitAudit('worker-failed', { branch: 'speech', reason: 'timeout' });
@@ -734,8 +757,12 @@ export function useConversation(
             session.interimCurrent = undefined;
             recordPerformance(task, Number(event.data.segment.processingMs) || 0, true);
             const rawText = String(event.data.segment.text ?? '').trim();
-            if (!rawText && session.asrProfile === 'moonshine-streaming-vi-research') {
-              // The streaming engine can legitimately have no decoded token yet.
+            if (
+              !rawText &&
+              (session.asrProfile === 'moonshine-streaming-vi-research' ||
+                session.asrProfile === 'gipformer-research')
+            ) {
+              // Streaming/transducer engines can legitimately have no decoded token yet on early breath/consonants.
               // Do not flash an error or erase the same utterance's existing partial.
               setProvisional((caption) => (caption?.id === task.id ? caption : null));
               next();
@@ -745,7 +772,10 @@ export function useConversation(
             }
             const unclear = !rawText || isSuspiciousRecognition(rawText);
             if (unclear) partialDisplay.reset();
-            if (!unclear) recordDelivery(task, true);
+            if (!unclear) {
+              clearTimeout(session.unclearTimer);
+              recordDelivery(task, true);
+            }
             setProvisional({
               id: task.id,
               revision: task.revision ?? 0,
@@ -781,11 +811,21 @@ export function useConversation(
               text: 'Chưa nghe rõ',
               state: 'unclear',
             });
+            clearTimeout(session.unclearTimer);
+            session.unclearTimer = setTimeout(() => {
+              if (!current()) return;
+              setProvisional((caption) =>
+                caption?.id === task.id && caption.state === 'unclear' ? null : caption,
+              );
+            }, 2500);
             next();
             processEmotion();
             return;
           }
-          setProvisional((caption) => (caption?.id === task.id ? null : caption));
+          clearTimeout(session.unclearTimer);
+          setProvisional((caption) =>
+            caption?.id === task.id || caption?.state === 'unclear' ? null : caption,
+          );
           recordDelivery(task, false);
           const revision = reviseCaption(
             asrSegment.text,
@@ -823,8 +863,14 @@ export function useConversation(
             fail(event.data.message);
             return;
           }
-          if (event.data.type === 'activity' && !session.current && !session.interimCurrent)
-            setStatus(event.data.speaking ? 'Đang nghe người đối diện…' : 'Đang chờ lời nói…');
+          if (event.data.type === 'activity') {
+            if (event.data.speaking) {
+              clearTimeout(session.unclearTimer);
+              setProvisional((caption) => (caption?.state === 'unclear' ? null : caption));
+            }
+            if (!session.current && !session.interimCurrent)
+              setStatus(event.data.speaking ? 'Đang nghe người đối diện…' : 'Đang chờ lời nói…');
+          }
           if (event.data.type === 'flushed') {
             session.flushed = true;
             session.pendingInterim = undefined;

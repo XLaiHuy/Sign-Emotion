@@ -20,6 +20,7 @@ export function SignPhraseCard({ phrase, onClose, onActive, onEnd }: SignPhraseC
   );
   const [expanded, setExpanded] = useState(false);
   const [replay, setReplay] = useState(0);
+  const [slowMotion, setSlowMotion] = useState(false);
   const video = useRef<HTMLVideoElement>(null);
   const card = useRef<HTMLDivElement>(null);
   const latest = useRef(onEnd);
@@ -60,9 +61,10 @@ export function SignPhraseCard({ phrase, onClose, onActive, onEnd }: SignPhraseC
   }, [phrase, onActive, error]);
   useEffect(() => {
     if (!video.current || !url) return;
+    video.current.playbackRate = slowMotion ? 0.75 : 1;
     if (playing) void video.current.play().catch(() => setPlaying(false));
     else video.current.pause();
-  }, [url, playing]);
+  }, [url, playing, slowMotion]);
   useEffect(() => {
     if (!expanded || !card.current) return;
     const previous = document.activeElement as HTMLElement | null;
@@ -110,6 +112,12 @@ export function SignPhraseCard({ phrase, onClose, onActive, onEnd }: SignPhraseC
     };
   }, [expanded]);
   if (!eligibleSignAsset(phrase.asset)) return null;
+  const categoryLabel =
+    phrase.category === 'health'
+      ? 'Y tế & Sức khỏe'
+      : phrase.category === 'daily'
+        ? 'Đời sống hàng ngày'
+        : 'Giao tiếp';
   return (
     <div
       ref={card}
@@ -119,7 +127,13 @@ export function SignPhraseCard({ phrase, onClose, onActive, onEnd }: SignPhraseC
       aria-label={`Ký hiệu câu: ${phrase.text}`}
     >
       <header className="sign-phrase-header">
-        <p>{phrase.text}</p>
+        <div className="sign-phrase-title-group">
+          <span className={`sign-category-badge sign-cat-${phrase.category ?? 'communication'}`}>
+            {categoryLabel}
+            {phrase.signClass ? ` · Từ khóa: ${phrase.signClass}` : ''}
+          </span>
+          <p>{phrase.text}</p>
+        </div>
         <button type="button" className="icon-button" onClick={onClose} aria-label="Đóng ký hiệu">
           <X size={20} />
         </button>
@@ -177,6 +191,15 @@ export function SignPhraseCard({ phrase, onClose, onActive, onEnd }: SignPhraseC
           disabled={failed || (!bytes && !url)}
         >
           <RotateCcw size={18} /> Phát lại
+        </button>
+        <button
+          type="button"
+          className={`button secondary sign-speed-btn${slowMotion ? ' sign-speed-active' : ''}`}
+          disabled={failed || (!bytes && !url)}
+          aria-pressed={slowMotion}
+          onClick={() => setSlowMotion((v) => !v)}
+        >
+          {slowMotion ? 'Tốc độ 0.75×' : 'Tốc độ 1×'}
         </button>
         <button type="button" className="button secondary" onClick={() => setExpanded((v) => !v)}>
           {expanded ? <Minimize2 size={18} /> : <Maximize2 size={18} />}{' '}
