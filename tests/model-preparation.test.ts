@@ -18,6 +18,7 @@ vi.mock('../src/infrastructure/offline/assets', () => ({
   modelAssetsReady: vi.fn(async () => true),
   prepareOffline: vi.fn(async () => {}),
   ensureOfflineApp: vi.fn(async () => {}),
+  ensureServiceWorkerController: vi.fn(async () => {}),
   loadManifest: vi.fn(async () => ({ assets: [{ bytes: 10 }] })),
 }));
 vi.mock('../src/infrastructure/offline/packs', () => ({
@@ -107,3 +108,32 @@ it('reports core startup progress against coreTotal (app + speech) and optional 
     { label: 'gợi ý kết hợp (tải nền)', done: 20, total: 20 },
   ]);
 });
+
+it('ensures service worker is active and controlling before signaling coreReady', async () => {
+  vi.stubEnv('DEV', false);
+  Object.defineProperty(navigator, 'serviceWorker', {
+    value: { controller: {} },
+    configurable: true,
+  });
+  const { ensureServiceWorkerController, checkOfflineReady } = await import(
+    '../src/infrastructure/offline/assets'
+  );
+  vi.mocked(checkOfflineReady).mockResolvedValue(true);
+  let ensureControllerCalledBeforeCore = false;
+  vi.mocked(ensureServiceWorkerController).mockImplementation(async () => {
+    ensureControllerCalledBeforeCore = true;
+  });
+  const coreReady = vi.fn(async () => {
+    expect(ensureControllerCalledBeforeCore).toBe(true);
+  });
+  vi.mocked(preparePack).mockImplementation(async () => {});
+  try {
+    await prepareAllModels(vi.fn(), coreReady);
+    expect(coreReady).toHaveBeenCalledOnce();
+  } finally {
+    vi.unstubAllEnvs();
+    delete (navigator as { serviceWorker?: unknown }).serviceWorker;
+  }
+});
+
+

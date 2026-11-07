@@ -337,6 +337,12 @@ export function ConversationPage({
   }, [running, onActive]);
   useEffect(() => setSoundFeedback(settings.soundFeedback), [settings.soundFeedback]);
   useEffect(() => setMirrorMode(settings.cameraMirror), [settings.cameraMirror]);
+  const preparingRef = useRef(preparing);
+  preparingRef.current = preparing;
+  const preparationErrorRef = useRef(preparationError);
+  preparationErrorRef.current = preparationError;
+  const failedDuringPreparation = useRef(false);
+  const warmupStartedWhilePreparing = useRef(false);
   useEffect(() => {
     if (
       pageUnloading.current ||
@@ -349,6 +355,7 @@ export function ConversationPage({
       return;
     let cancelled = false;
     let branch: 'speech' | 'face' = 'speech';
+    warmupStartedWhilePreparing.current = preparingRef.current;
     setAiReady(false);
     setCoreWarmupFailed(false);
     setPhase(
@@ -372,6 +379,8 @@ export function ConversationPage({
         throw new ModelInitializationError(camera.getPreparationFailure());
       }
       if (cancelled || document.hidden || pageUnloading.current) return;
+      warmupStartedWhilePreparing.current = false;
+      failedDuringPreparation.current = false;
       setAiReady(true);
       setPhase('');
       emitAudit('ai-ready', { phase: 'ready' });
@@ -407,6 +416,19 @@ export function ConversationPage({
         setWarmupAttempt((attempt) => attempt + 1);
         return;
       }
+      const startedWhilePreparing = warmupStartedWhilePreparing.current;
+      warmupStartedWhilePreparing.current = false;
+      const curPreparing = preparingRef.current;
+      const curError = preparationErrorRef.current;
+      if (startedWhilePreparing && !curPreparing && !curError) {
+        setMessage('');
+        setCoreWarmupFailed(false);
+        setWarmupAttempt((attempt) => attempt + 1);
+        return;
+      }
+      if (startedWhilePreparing && curPreparing) {
+        failedDuringPreparation.current = true;
+      }
       setMessage(modelInitializationMessage(branch, code));
       setCoreWarmupFailed(true);
       emitAudit('ai-preparation-failed', {
@@ -433,6 +455,33 @@ export function ConversationPage({
     candidate,
     activeAsrProfile,
     warmupAttempt,
+    preparationPaused,
+  ]);
+  const handleRetryPreparation = useCallback(() => {
+    failedDuringPreparation.current = false;
+    warmupStartedWhilePreparing.current = false;
+    setMessage('');
+    setCoreWarmupFailed(false);
+    setPreparationPaused(false);
+    setWarmupAttempt((attempt) => attempt + 1);
+    retryModelPreparation();
+  }, []);
+  const prevPreparing = useRef(preparing);
+  useEffect(() => {
+    const justFinishedDownloading = prevPreparing.current && !preparing && !preparationError;
+    prevPreparing.current = preparing;
+    if (justFinishedDownloading) {
+      if (failedDuringPreparation.current && !aiReady && !preparationPaused) {
+        failedDuringPreparation.current = false;
+        setMessage('');
+        setCoreWarmupFailed(false);
+        setWarmupAttempt((attempt) => attempt + 1);
+      }
+    }
+  }, [
+    preparing,
+    preparationError,
+    aiReady,
     preparationPaused,
   ]);
   useEffect(() => {
@@ -1138,11 +1187,7 @@ export function ConversationPage({
                 <button
                   className="text-button"
                   type="button"
-                  onClick={() => {
-                    setMessage('');
-                    setPreparationPaused(false);
-                    setWarmupAttempt((attempt) => attempt + 1);
-                  }}
+                  onClick={handleRetryPreparation}
                 >
                   Thử chuẩn bị lại
                 </button>
@@ -1171,21 +1216,29 @@ export function ConversationPage({
               </p>
             )}
 
-            {!offline && (!coreReady || Boolean(preparationError)) && (
+            {(!coreReady || preparing || aiPreparing || Boolean(preparationError)) && (
               <div className="model-readiness" role="status">
                 <span>
                   {preparing
                     ? `Đang chuẩn bị SignEmo · ${progress}%`
-                    : preparationError
-                      ? 'Chưa tải xong tài nguyên cần thiết.'
-                      : 'Đang kiểm tra tài nguyên trên thiết bị…'}
+                    : aiPreparing
+                      ? 'Đang chuẩn bị AI trên thiết bị…'
+                      : preparationError
+                        ? 'Chưa tải xong tài nguyên cần thiết.'
+                        : 'Đang kiểm tra tài nguyên trên thiết bị…'}
                 </span>
-                {preparing && <progress max="100" value={progress} aria-label="Tiến độ chuẩn bị" />}
-                {downloadDetail && <small>{downloadDetail}</small>}
+                {(preparing || aiPreparing || !coreReady) && (
+                  <progress
+                    max="100"
+                    value={preparing ? progress : undefined}
+                    aria-label="Tiến độ chuẩn bị"
+                  />
+                )}
+                {preparing && downloadDetail && <small>{downloadDetail}</small>}
                 {preparationError && (
                   <>
                     <small>{preparationError}</small>
-                    <button className="text-button" type="button" onClick={retryModelPreparation}>
+                    <button className="text-button" type="button" onClick={handleRetryPreparation}>
                       Thử lại
                     </button>
                   </>

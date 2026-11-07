@@ -158,6 +158,7 @@ registerRoute(
       request,
       'signemo-conversation-v1',
       '/models/conversation-manifest.json',
+      workerCompatible,
     );
   },
 );

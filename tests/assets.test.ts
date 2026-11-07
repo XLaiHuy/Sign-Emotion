@@ -97,4 +97,111 @@ describe('offline integrity', () => {
     ).rejects.toMatchObject({ name: 'AbortError' });
     expect(put.mock.calls.map(([url]) => url)).toEqual(['/models/manifest.json']);
   });
+
+  describe('ensureServiceWorkerController', () => {
+    it('returns immediately if serviceWorker is not supported in navigator', async () => {
+      const { ensureServiceWorkerController } = await import(
+        '../src/infrastructure/offline/assets'
+      );
+      const original = (navigator as { serviceWorker?: unknown }).serviceWorker;
+      try {
+        delete (navigator as { serviceWorker?: unknown }).serviceWorker;
+        await expect(ensureServiceWorkerController()).resolves.toBeUndefined();
+      } finally {
+        Object.defineProperty(navigator, 'serviceWorker', {
+          value: original,
+          configurable: true,
+        });
+      }
+    });
+
+    it('resolves immediately when controller is already present', async () => {
+      const { ensureServiceWorkerController } = await import(
+        '../src/infrastructure/offline/assets'
+      );
+      Object.defineProperty(navigator, 'serviceWorker', {
+        value: {
+          ready: Promise.resolve({}),
+          controller: {},
+        },
+        configurable: true,
+      });
+      await expect(ensureServiceWorkerController()).resolves.toBeUndefined();
+    });
+
+    it('waits for controllerchange and cleans up listener when controller becomes active', async () => {
+      const { ensureServiceWorkerController } = await import(
+        '../src/infrastructure/offline/assets'
+      );
+      const listeners = new Map<string, Set<EventListener>>();
+      const swMock = {
+        ready: Promise.resolve({}),
+        controller: null as object | null,
+        addEventListener: vi.fn((type: string, listener: EventListener) => {
+          if (!listeners.has(type)) listeners.set(type, new Set());
+          listeners.get(type)!.add(listener);
+        }),
+        removeEventListener: vi.fn((type: string, listener: EventListener) => {
+          listeners.get(type)?.delete(listener);
+        }),
+      };
+      Object.defineProperty(navigator, 'serviceWorker', {
+        value: swMock,
+        configurable: true,
+      });
+
+      const promise = ensureServiceWorkerController();
+      await vi.waitFor(() => {
+        expect(swMock.addEventListener).toHaveBeenCalledWith(
+          'controllerchange',
+          expect.any(Function),
+          { once: true },
+        );
+      });
+
+      // Now controller attaches
+      swMock.controller = {};
+      listeners.get('controllerchange')?.forEach((l) => l(new Event('controllerchange')));
+
+      await expect(promise).resolves.toBeUndefined();
+      expect(swMock.removeEventListener).toHaveBeenCalledWith(
+        'controllerchange',
+        expect.any(Function),
+      );
+    });
+
+    it('aborts and cleans up listener when abort signal is triggered', async () => {
+      const { ensureServiceWorkerController } = await import(
+        '../src/infrastructure/offline/assets'
+      );
+      const swMock = {
+        ready: Promise.resolve({}),
+        controller: null as object | null,
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+      };
+      Object.defineProperty(navigator, 'serviceWorker', {
+        value: swMock,
+        configurable: true,
+      });
+
+      const abort = new AbortController();
+      const promise = ensureServiceWorkerController(abort.signal);
+      await vi.waitFor(() => {
+        expect(swMock.addEventListener).toHaveBeenCalledWith(
+          'controllerchange',
+          expect.any(Function),
+          { once: true },
+        );
+      });
+      abort.abort();
+
+      await expect(promise).rejects.toMatchObject({ name: 'AbortError' });
+      expect(swMock.removeEventListener).toHaveBeenCalledWith(
+        'controllerchange',
+        expect.any(Function),
+      );
+    });
+  });
 });
+

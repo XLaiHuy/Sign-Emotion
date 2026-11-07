@@ -207,7 +207,8 @@ export default function App() {
     setPreparing(true);
     setProgress(0);
     setPreparationError('');
-    updatePreparationStatus({ preparing: true, progress: 0, error: '', detail: '' });
+    setOffline(false);
+    updatePreparationStatus({ preparing: true, progress: 0, error: '', detail: '', offline: false });
     emitAudit('assets-preparing', { branch: 'assets' });
     setAuditPhase('preparing-assets');
     downloadAbort.current = new AbortController();

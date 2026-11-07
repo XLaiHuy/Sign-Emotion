@@ -4,6 +4,7 @@ import {
   prepareOffline,
   modelAssetsReady,
   ensureOfflineApp,
+  ensureServiceWorkerController,
 } from './assets';
 import { loadPacks, packReady, preparePack } from './packs';
 import { conversationProfile } from '../inference/conversationProfile';
@@ -111,6 +112,15 @@ export async function prepareAllModels(
         );
         offset += candidateBytes;
       }
+      if (!import.meta.env.DEV && 'serviceWorker' in navigator) {
+        try {
+          await ensureServiceWorkerController(signal);
+        } catch (err) {
+          if (signal?.aborted) throw err;
+          /* allow core ready to proceed if SW activation takes longer */
+        }
+      }
+      signal?.throwIfAborted();
       await onCoreReady();
     }
   }

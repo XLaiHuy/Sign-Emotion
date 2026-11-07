@@ -217,26 +217,38 @@ export async function prepareOffline(
   if (!assetsOnly) await ensureOfflineApp(signal);
   return manifest;
 }
-export async function ensureOfflineApp(signal?: AbortSignal) {
-  if (!('serviceWorker' in navigator)) throw new Error('Trình duyệt chưa hỗ trợ ngoại tuyến.');
+export async function ensureServiceWorkerController(signal?: AbortSignal) {
+  if (!('serviceWorker' in navigator)) return;
+  if (navigator.serviceWorker.controller) return;
   signal?.throwIfAborted();
-  await bounded(navigator.serviceWorker.ready, signal);
+  if (navigator.serviceWorker.ready) {
+    await bounded(navigator.serviceWorker.ready, signal);
+  }
   if (!navigator.serviceWorker.controller) {
-    let changed!: () => void;
+    let changed: (() => void) | undefined;
     try {
       await bounded(
         new Promise<void>((resolve) => {
+          if (navigator.serviceWorker.controller) {
+            resolve();
+            return;
+          }
           changed = resolve;
           navigator.serviceWorker.addEventListener('controllerchange', changed, { once: true });
         }),
         signal,
       );
     } finally {
-      navigator.serviceWorker.removeEventListener('controllerchange', changed);
+      if (changed) navigator.serviceWorker.removeEventListener('controllerchange', changed);
     }
   }
+}
+export async function ensureOfflineApp(signal?: AbortSignal) {
+  if (!('serviceWorker' in navigator)) throw new Error('Trình duyệt chưa hỗ trợ ngoại tuyến.');
+  await ensureServiceWorkerController(signal);
   signal?.throwIfAborted();
   if (!(await checkOfflineReady()))
     throw new Error('Chưa đủ cache ứng dụng/model. Hãy tải lại trang rồi kiểm tra lại.');
   signal?.throwIfAborted();
 }
+
