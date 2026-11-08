@@ -10,6 +10,10 @@ import { emitAudit, initializeAudit } from './infrastructure/audit/log';
 initializeAudit(import.meta.env.VITE_BUILD_ID || 'development');
 
 registerSW({
+  onNeedReload() {
+    // Prevent workbox-window from unconditionally calling window.location.reload()
+    // and causing reload loops; App.tsx coordinates safe single-shot updates.
+  },
   onNeedRefresh() {
     emitAudit('update-available');
     window.dispatchEvent(new Event('signemo-update'));

@@ -232,9 +232,9 @@ export function ConversationPage({
   const [toneEnabled, setToneEnabled] = useState(false);
   const isLocalhost =
     window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-  const isLiveLocalhost = isLocalhost && import.meta.env.MODE !== 'test';
+  const isLiveBrowser = import.meta.env.MODE !== 'test';
   const [localAsrChoice, setLocalAsrChoice] = useState<Settings['asrProfile'] | null>(() => {
-    if (!isLiveLocalhost) return null;
+    if (!isLiveBrowser) return null;
     try {
       const saved = window.sessionStorage.getItem('signemo-local-asr-choice');
       if (
@@ -256,7 +256,7 @@ export function ConversationPage({
   const moonshineRuntimeCompatible = runtimeProfile.asr === 'moonshine-streaming-vi-research';
   const moonshineAvailable =
     isLocalMoonshineOrigin && window.crossOriginIsolated && moonshineRuntimeCompatible;
-  const requestedProfile = isLiveLocalhost
+  const requestedProfile = isLiveBrowser
     ? (localAsrChoice ??
       (settings.asrProfile && settings.asrProfile !== 'product'
         ? settings.asrProfile
@@ -269,7 +269,7 @@ export function ConversationPage({
         : runtimeProfile.asr
       : requestedProfile === 'moonshine-streaming-vi-research' && moonshineAvailable
         ? requestedProfile
-        : requestedProfile === 'gipformer-research' && isLocalhost
+        : requestedProfile === 'gipformer-research' && (isLiveBrowser || isLocalhost)
           ? 'gipformer-research'
           : 'product';
   const moonshineNeedsLocalMode =
@@ -1216,25 +1216,32 @@ export function ConversationPage({
               </p>
             )}
 
-            {(!coreReady || preparing || aiPreparing || Boolean(preparationError)) && (
+            {(!coreReady ||
+              (preparing && !(coreReady && aiReady && downloadDetail.includes('(tải nền)'))) ||
+              aiPreparing ||
+              Boolean(preparationError)) && (
               <div className="model-readiness" role="status">
                 <span>
-                  {preparing
-                    ? `Đang chuẩn bị SignEmo · ${progress}%`
-                    : aiPreparing
-                      ? 'Đang chuẩn bị AI trên thiết bị…'
-                      : preparationError
-                        ? 'Chưa tải xong tài nguyên cần thiết.'
-                        : 'Đang kiểm tra tài nguyên trên thiết bị…'}
+                  {aiPreparing && progress >= 99
+                    ? 'Đang chuẩn bị AI trên thiết bị…'
+                    : preparing
+                      ? `Đang chuẩn bị SignEmo · ${progress}%`
+                      : aiPreparing
+                        ? 'Đang chuẩn bị AI trên thiết bị…'
+                        : preparationError
+                          ? 'Chưa tải xong tài nguyên cần thiết.'
+                          : 'Đang kiểm tra tài nguyên trên thiết bị…'}
                 </span>
                 {(preparing || aiPreparing || !coreReady) && (
                   <progress
                     max="100"
-                    value={preparing ? progress : undefined}
+                    value={preparing && !(aiPreparing && progress >= 99) ? progress : undefined}
                     aria-label="Tiến độ chuẩn bị"
                   />
                 )}
-                {preparing && downloadDetail && <small>{downloadDetail}</small>}
+                {preparing && !(aiPreparing && progress >= 99) && downloadDetail && (
+                  <small>{downloadDetail}</small>
+                )}
                 {preparationError && (
                   <>
                     <small>{preparationError}</small>
@@ -1657,14 +1664,15 @@ export function ConversationPage({
                           ? runtimeProfile.asr
                           : moonshineNeedsLocalMode || moonshineRuntimeUnavailable
                             ? 'product'
-                            : requestedProfile === 'gipformer-research' && !isLocalhost
+                            : requestedProfile === 'gipformer-research' &&
+                                !(isLiveBrowser || isLocalhost)
                               ? 'product'
                               : requestedProfile
                       }
                       disabled={runtimeProfile.id === 'pc-candidate' || running || !changeSettings}
                       onChange={(event) => {
                         const nextProfile = event.target.value as Settings['asrProfile'];
-                        if (isLiveLocalhost) {
+                        if (isLiveBrowser) {
                           setLocalAsrChoice(nextProfile);
                           try {
                             window.sessionStorage.setItem('signemo-local-asr-choice', nextProfile);
@@ -1683,9 +1691,9 @@ export function ConversationPage({
                         <option value="gipformer-research">
                           Gipformer tiếng Việt · tốc độ cao (PC)
                         </option>
-                      ) : isLocalhost ? (
+                      ) : isLiveBrowser || isLocalhost ? (
                         <option value="gipformer-research">
-                          Gipformer tiếng Việt · hiện chữ trực tiếp (ưu tiên local)
+                          Gipformer tiếng Việt · hiện chữ trực tiếp (ưu tiên trên thiết bị)
                         </option>
                       ) : null}
                       <option value="moonshine-streaming-vi-research" disabled={!moonshineAvailable}>

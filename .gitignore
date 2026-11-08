@@ -46,6 +46,7 @@ public/models/*.task
 public/models/local/
 public/models/moonshine/
 public/runtime/
+public/research/
 
 # Media files (Ignore raw media, whitelist required web assets)
 *.mp4

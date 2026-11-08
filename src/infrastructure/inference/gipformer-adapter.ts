@@ -23,6 +23,7 @@ interface ResearchAsset {
 }
 const ROOT = '/research/gipformer/';
 const MODEL_FILES = ['encoder.int8.onnx', 'decoder.int8.onnx', 'joiner.int8.onnx', 'tokens.txt'];
+const HF_GIPFORMER_BASE = `https://huggingface.co/g-group-ai-lab/gipformer1.5-68M-rnnt/resolve/${GIPFORMER_MANIFEST.revision}/`;
 /** Explicit lab profile: no microphone or remote inference. */
 export class GipformerAdapter implements AsrAdapter {
   private module: SherpaModule | null = null;
@@ -31,15 +32,16 @@ export class GipformerAdapter implements AsrAdapter {
   async prepare() {
     const generation = this.generation;
     const cache = await caches.open('signemo-research-gipformer-v1');
-    let response: Response;
+    let manifest: { profile: string; assets: readonly ResearchAsset[] } = GIPFORMER_MANIFEST;
     try {
-      response =
+      const response =
         (await cache.match(ROOT + 'manifest.json')) ?? (await fetch(ROOT + 'manifest.json'));
+      if (response.ok && !response.headers.get('content-type')?.includes('text/html')) {
+        manifest = (await response.json()) as { profile: string; assets: ResearchAsset[] };
+      }
     } catch {
-      response = (await cache.match(ROOT + 'manifest.json')) ?? new Response('', { status: 404 });
+      /* fallback to pinned GIPFORMER_MANIFEST */
     }
-    if (!response.ok) throw new Error('Chưa chuẩn bị Gipformer nghiên cứu.');
-    const manifest = (await response.json()) as { profile: string; assets: ResearchAsset[] };
     const allowed = [...MODEL_FILES, 'sherpa.mjs', 'asr.mjs', 'sherpa.wasm'];
     if (
       manifest.profile !== 'gipformer1.5-int8@sherpa-1.13.8' ||
@@ -59,10 +61,25 @@ export class GipformerAdapter implements AsrAdapter {
       manifest.assets.reduce((sum, a) => sum + a.size, 0) > 100 * 1048576
     )
       throw new Error('Profile Gipformer không hợp lệ.');
+    const fetchAssetResponse = async (file: string) => {
+      try {
+        const direct = await fetch(ROOT + file);
+        if (direct.ok && !direct.headers.get('content-type')?.includes('text/html')) {
+          return direct;
+        }
+      } catch {
+        /* try pinned Hugging Face CDN below for model weights */
+      }
+      if (MODEL_FILES.includes(file)) {
+        const cdn = await fetch(HF_GIPFORMER_BASE + file);
+        if (cdn.ok) return cdn;
+      }
+      throw new Error('Thiếu asset nghiên cứu.');
+    };
     const read = async (file: string) => {
       const asset = manifest.assets.find((item) => item.file === file)!;
       const cached = await cache.match(ROOT + file);
-      let response = cached ?? (await fetch(ROOT + file));
+      let response = cached ?? (await fetchAssetResponse(file));
       if (!response.ok) throw new Error('Thiếu asset nghiên cứu.');
       let bytes = new Uint8Array(await response.arrayBuffer());
       const digestOf = async (value: Uint8Array) =>
@@ -72,7 +89,7 @@ export class GipformerAdapter implements AsrAdapter {
       let digest = await digestOf(bytes);
       if (cached && (bytes.length !== asset.size || digest !== asset.sha256)) {
         await cache.delete(ROOT + file);
-        response = await fetch(ROOT + file);
+        response = await fetchAssetResponse(file);
         if (!response.ok) throw new Error('Thiếu asset nghiên cứu.');
         bytes = new Uint8Array(await response.arrayBuffer());
         digest = await digestOf(bytes);
@@ -95,20 +112,26 @@ export class GipformerAdapter implements AsrAdapter {
         );
       return bytes;
     };
-    await read('sherpa.mjs');
-    await read('asr.mjs');
+    const [ , , wasmBinary, ...modelBuffers] = await Promise.all([
+      read('sherpa.mjs'),
+      read('asr.mjs'),
+      read('sherpa.wasm'),
+      ...MODEL_FILES.map((file) => read(file)),
+    ]);
     const loaderUrl = ROOT + 'sherpa.mjs',
       wrapperUrl = ROOT + 'asr.mjs';
     const { default: createModule } = await import(/* @vite-ignore */ loaderUrl);
     const { OfflineRecognizer } = await import(/* @vite-ignore */ wrapperUrl);
     const module = (await createModule({
-      wasmBinary: await read('sherpa.wasm'),
+      wasmBinary,
       print: () => {},
       printErr: () => {},
     })) as SherpaModule;
     this.module = module;
     try {
-      for (const file of MODEL_FILES) module.FS.writeFile('/' + file, await read(file));
+      for (let i = 0; i < MODEL_FILES.length; i++) {
+        module.FS.writeFile('/' + MODEL_FILES[i], modelBuffers[i]);
+      }
       const recognizer = new OfflineRecognizer(
         {
           featConfig: { sampleRate: 16000, featureDim: 80 },

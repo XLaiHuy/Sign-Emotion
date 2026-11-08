@@ -158,18 +158,61 @@ export default function App() {
         if (prepareRunner.current && !activeRef.current) void prepareRunner.current();
       }
     };
-    const updated = () => setUpdate(true);
+    const shouldSuppressSwUpdate = () => {
+      try {
+        const lastReload = Number(window.sessionStorage.getItem('signemo.sw.reloadAt') ?? '0');
+        return Number.isFinite(lastReload) && Date.now() - lastReload < 60_000;
+      } catch {
+        return false;
+      }
+    };
+    const markSwReload = () => {
+      try {
+        window.sessionStorage.setItem('signemo.sw.reloadAt', String(Date.now()));
+      } catch {
+        /* ignore storage restrictions */
+      }
+    };
+    const handleSwUpdate = () => {
+      if (shouldSuppressSwUpdate()) return;
+      if (
+        !import.meta.env.DEV &&
+        import.meta.env.MODE !== 'test' &&
+        !activeRef.current &&
+        pageRef.current !== 'lab' &&
+        pageRef.current !== 'speech-lab' &&
+        navigator.serviceWorker?.getRegistration
+      ) {
+        void navigator.serviceWorker
+          .getRegistration()
+          .then((registration) => {
+            if (!registration?.waiting || shouldSuppressSwUpdate()) return;
+            markSwReload();
+            setUpdate(false);
+            navigator.serviceWorker.addEventListener(
+              'controllerchange',
+              () => window.location.reload(),
+              { once: true },
+            );
+            registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+          })
+          .catch(() => setUpdate(true));
+        return;
+      }
+      setUpdate(true);
+    };
+    const updated = () => handleSwUpdate();
     window.addEventListener('online', network);
     window.addEventListener('offline', network);
     window.addEventListener('signemo-update', updated);
     // registerSW can discover a waiting worker before React subscribes.
-    // Reconcile its authoritative state; never activate/reload automatically.
+    // Reconcile its authoritative state; never activate/reload automatically in tests.
     let updateCheckCancelled = false;
     if (navigator.serviceWorker?.getRegistration)
       void navigator.serviceWorker
         .getRegistration()
         .then((registration) => {
-          if (!updateCheckCancelled && registration?.waiting) setUpdate(true);
+          if (!updateCheckCancelled && registration?.waiting) handleSwUpdate();
         })
         .catch(() => {});
     const changedSettings = (event: Event) => {
@@ -469,6 +512,12 @@ export default function App() {
                 className="button secondary"
                 disabled={conversationActive || page === 'lab' || page === 'speech-lab'}
                 onClick={async () => {
+                  try {
+                    window.sessionStorage.setItem('signemo.sw.reloadAt', String(Date.now()));
+                  } catch {
+                    /* ignore storage restrictions */
+                  }
+                  setUpdate(false);
                   const registration = await navigator.serviceWorker.getRegistration();
                   if (!registration?.waiting) {
                     window.location.reload();

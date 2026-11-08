@@ -16,7 +16,7 @@ ARG VITE_STREAMING_ASR=
 
 # Prepare the pinned, checksum-verified AI runtime before copying application
 # source. Docker can reuse this expensive layer while the UI changes.
-COPY scripts/prepare-assets.mjs ./scripts/prepare-assets.mjs
+COPY scripts/prepare-assets.mjs scripts/prepare-gipformer-web.mjs ./scripts/
 COPY scripts/prepare-conversation-assets.mjs scripts/conversation-assets.lock.json ./scripts/
 COPY scripts/prepare-moonshine-assets.mjs scripts/moonshine-streaming-vi.lock.json ./scripts/
 COPY public ./public

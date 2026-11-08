@@ -137,7 +137,7 @@ export default defineConfig({
       filename: 'sw.ts',
       injectManifest: {
         globPatterns: ['**/*.{js,css,html,svg,png,webmanifest,woff2}', 'demo/manifest.json'],
-        globIgnores: ['models/**', 'runtime/**', '**/ExpressionAvatar-*.js'],
+        globIgnores: ['models/**', 'runtime/**', 'research/**', '**/ExpressionAvatar-*.js'],
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
       },
       manifest: {

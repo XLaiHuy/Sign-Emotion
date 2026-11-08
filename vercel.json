@@ -33,7 +33,7 @@
   ],
   "rewrites": [
     {
-      "source": "/((?!immutable/|assets/|models/|signs/|runtime/|avatar/|demo/|favicon\\.ico|icon\\.svg|manifest\\.webmanifest|sw\\.js).*)$",
+      "source": "/((?!immutable/|assets/|models/|signs/|runtime/|research/|avatar/|demo/|favicon\\.ico|icon\\.svg|manifest\\.webmanifest|sw\\.js).*)$",
       "destination": "/index.html"
     }
   ]

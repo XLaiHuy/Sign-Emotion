@@ -70,17 +70,34 @@ registerRoute(
     url.origin === self.location.origin &&
     url.pathname.startsWith('/research/gipformer/'),
   async ({ request, url }) => {
-    const cached = await (await caches.open('signemo-research-gipformer-v1')).match(request);
+    const cache = await caches.open('signemo-research-gipformer-v1');
+    const cached = await cache.match(request);
     if (url.pathname.endsWith('/manifest.json')) {
       try {
         const response = await fetch(request, { cache: 'no-store' });
-        if (response.ok) return response;
+        if (response.ok && !response.headers.get('content-type')?.includes('text/html'))
+          return workerCompatible(response);
       } catch {
         /* explicit offline research cache */
       }
-      return cached ?? new Response('', { status: 404 });
+      return cached ? workerCompatible(cached) : new Response('', { status: 404 });
     }
-    return cached ?? fetch(request);
+    if (cached) return workerCompatible(cached);
+    try {
+      const direct = await fetch(request);
+      if (direct.ok && !direct.headers.get('content-type')?.includes('text/html')) {
+        return workerCompatible(direct);
+      }
+    } catch {
+      /* fallback to pinned Hugging Face CDN below */
+    }
+    const file = url.pathname.slice('/research/gipformer/'.length);
+    if (['encoder.int8.onnx', 'decoder.int8.onnx', 'joiner.int8.onnx', 'tokens.txt'].includes(file)) {
+      const cdnUrl = `https://huggingface.co/g-group-ai-lab/gipformer1.5-68M-rnnt/resolve/dd9227dcd8705c13f33bdbe59728d546ab94480f/${file}`;
+      const cdnResp = await fetch(cdnUrl);
+      if (cdnResp.ok) return workerCompatible(cdnResp);
+    }
+    return fetch(request);
   },
 );
 self.addEventListener('activate', (event) => {
@@ -210,6 +227,12 @@ registerRoute(
         headers.set('Cross-Origin-Embedder-Policy', 'require-corp');
         return new Response(saved.body, { headers });
       }
+    }
+    try {
+      const fresh = await fetch(request);
+      if (fresh.ok) return fresh;
+    } catch {
+      /* offline fallback to precached index.html */
     }
     return (await matchPrecache('/index.html'))!;
   },

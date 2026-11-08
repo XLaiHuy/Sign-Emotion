@@ -1,6 +1,7 @@
 import { mkdir, readFile, writeFile, copyFile, readdir, stat, rm } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { dirname, resolve } from 'node:path';
+import { prepareGipformerWebRuntime } from './prepare-gipformer-web.mjs';
 
 const root = process.cwd();
 const assets = [];
@@ -194,6 +195,7 @@ for (const size of [192, 512]) {
     ]),
   );
 }
+await prepareGipformerWebRuntime(root);
 console.log(
   `Prepared ${assets.length} verified assets (${(assets.reduce((s, a) => s + a.bytes, 0) / 1024 / 1024).toFixed(1)} MiB)`,
 );
